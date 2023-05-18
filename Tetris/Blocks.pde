@@ -144,8 +144,8 @@ class Blocks {
   public Blocks(/* Random Constructor*/) {
     this.block = (int) (7 * Math.random());
     this.rotationState = 0;
-    leftmostXGrid = (int) (Math.random() * 8);
-    leftmostYGrid = -2;
+    leftmostXGrid = (int) (Math.random() * (11 - blockTypes[block][rotationState][0].length));
+    leftmostYGrid = 0;
     curBlock = blockTypes[block][rotationState];
   }
   // Methods
@@ -157,8 +157,10 @@ class Blocks {
         rotationState = 0;
       }
       if (rotationState < 0) rotationState = 3;
-      if (blockTypes[block][rotationState][0].length > blockTypes[block][oldRotation][0].length) leftmostXGrid--;
-      else if (blockTypes[block][rotationState][0].length < blockTypes[block][oldRotation][0].length) leftmostXGrid++;
+      if (leftmostXGrid > 3 && blockTypes[block][rotationState][0].length > blockTypes[block][oldRotation][0].length) leftmostXGrid--;
+      else if (leftmostXGrid > 3 && blockTypes[block][rotationState][0].length < blockTypes[block][oldRotation][0].length) leftmostXGrid++;
+      else if (leftmostXGrid == 0 && blockTypes[block][rotationState][0].length < blockTypes[block][oldRotation][0].length) leftmostXGrid = 0;
+      else if (leftmostXGrid == 0 && blockTypes[block][rotationState][0].length > blockTypes[block][oldRotation][0].length) leftmostXGrid = 0;
       curBlock = blockTypes[block][rotationState];
     }
     if (block == 6) {

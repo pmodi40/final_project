@@ -7,6 +7,7 @@ public Grid[][] border = new Grid[24][18];
 public Blocks curBlock;
 public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(255, 0, 0);
+public int speed = 40;
 // Setup Method
 void setup() {
     size(540, 720);
@@ -20,6 +21,9 @@ void setup() {
 void draw() {
   updateGrid();
   drawGrid();
+  if (frameCount % speed == 0) {
+    updateBlock();
+  }
 }
 void keyPressed() {
   if (key == "A".charAt(0)) curBlock.rotateB(1);
@@ -91,7 +95,25 @@ void updateGrid() {
 }
 
 void updateBlock() {
-  
+  drop();
+}
+
+void drop() {
+  curBlock.leftmostYGrid++;
+  updateGrid();
+  int yLen = curBlock.curBlock.length;
+  int bottomYCor = curBlock.leftmostYGrid + yLen;
+  if (bottomYCor > 19) {
+    for (PVector i : curBlock.coords) {
+      System.out.println(i.y);
+      coordinates[(int) i.y][(int) i.x].filled = true;
+    }
+    regenBlock();
+  }
+}
+
+void regenBlock() {
+  curBlock = new Blocks();
 }
 /**
 Game Procedure:
