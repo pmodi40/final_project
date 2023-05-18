@@ -1,3 +1,3 @@
 # final_project
-Name: Pranjal Modi
-Period: 1
+- Name: Pranjal Modi
+- Period: 1
