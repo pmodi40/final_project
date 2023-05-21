@@ -5,6 +5,7 @@ class Grid {
     public color curColor;
     public int leftXCor;
     public int leftYCor;
+    public color border = color(0, 0, 0);
     public boolean filled = false;
     // Constructor(s)
     public Grid(int leftXCor, int leftYCor, color curColor) {

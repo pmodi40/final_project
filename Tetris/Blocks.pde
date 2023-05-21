@@ -157,8 +157,8 @@ class Blocks {
         rotationState = 0;
       }
       if (rotationState < 0) rotationState = 3;
-      if (leftmostXGrid > 3 && blockTypes[block][rotationState][0].length > blockTypes[block][oldRotation][0].length) leftmostXGrid--;
-      else if (leftmostXGrid > 3 && blockTypes[block][rotationState][0].length < blockTypes[block][oldRotation][0].length) leftmostXGrid++;
+      if (leftmostXGrid == (10 - curBlock[0].length) && blockTypes[block][rotationState][0].length > blockTypes[block][oldRotation][0].length) leftmostXGrid--;
+      else if (leftmostXGrid == (10 - curBlock[0].length) && blockTypes[block][rotationState][0].length < blockTypes[block][oldRotation][0].length) leftmostXGrid++;
       else if (leftmostXGrid == 0 && blockTypes[block][rotationState][0].length < blockTypes[block][oldRotation][0].length) leftmostXGrid = 0;
       else if (leftmostXGrid == 0 && blockTypes[block][rotationState][0].length > blockTypes[block][oldRotation][0].length) leftmostXGrid = 0;
       curBlock = blockTypes[block][rotationState];
@@ -185,6 +185,63 @@ class Blocks {
     color[] colors = {color(221, 10, 178), color(255, 200, 46), color(254, 251, 52), color(83, 218, 63), color(1, 237, 250), color(0, 119, 211), color(253, 63, 89)};
     return colors[block];
   }
-  
+  PVector coordIncident() {
+    System.out.println(keyCode);
+    update();
+    System.out.println(coords);
+    ArrayList<PVector> incidentPoints = new ArrayList<PVector>();
+    for (PVector i : coords) { // Issue is here!
+      for (int j = (int) i.y; j < 20; j++) {
+        if (coordinates[j][(int) i.x].filled == true) {
+          incidentPoints.add(new PVector(leftmostXGrid, j - curBlock.length));
+        }
+      }
+    }
+    if (incidentPoints.size() == 1) {
+      incidentPoints.set(0, new PVector((int) incidentPoints.get(0).x, (int) incidentPoints.get(0).y + 1));
+    }
+    System.out.println(incidentPoints);
+    PVector lowest = new PVector(0, -1);
+    for (PVector i : incidentPoints) {
+      if(!incidentOrNot(i) && (int) i.y > (int) lowest.y) {
+        ArrayList<PVector> possibleDrop = outlineCoordinates(i);
+        boolean clearPath = true;
+        for (PVector j : possibleDrop) {
+          for (int k = (int) j.y; k > leftmostYGrid; k--) {
+            clearPath &= coordinates[k][(int) j.x].filled == false;
+          }
+        }
+        System.out.println(clearPath);
+        if (clearPath) {
+          lowest = i;
+        }
+      }
+    }
+    if ((int) lowest.x == 0 && (int) lowest.y == -1) {
+      return new PVector(leftmostXGrid, 20 - curBlock.length);
+    }
+    return lowest;
+  }
+  boolean incidentOrNot(PVector leftmostOutline) { // Bugged
+  ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
+  // System.out.println(outlineCoords);
+    boolean incident = false;
+    for (PVector i : outlineCoords) {
+      incident |= coordinates[(int) i.y][(int) i.x].filled != false;
+    }
+    
+    return incident;
+  }
+  ArrayList<PVector> outlineCoordinates(PVector leftmostOutline) { // SUPER Bugged
+    ArrayList<PVector> outlineCoords = new ArrayList<PVector>();
+  for (int i = 0; i < curBlock.length; i++) {
+      for (int j = 0; j < curBlock[i].length; j++) {
+        if (curBlock[i][j] == 1) {
+          outlineCoords.add(new PVector((int) leftmostOutline.x + j, (int) leftmostOutline.y + i));
+        }
+      }
+    }
+    return outlineCoords;
+  }
   
 }
