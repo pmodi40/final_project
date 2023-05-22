@@ -144,7 +144,7 @@ class Blocks {
   public Blocks(/* Random Constructor*/) {
     this.block = (int) (7 * Math.random());
     if (block < 4) {
-      this.rotationState = (int) (5 * Math.random());
+      this.rotationState = (int) (4 * Math.random());
     }
     leftmostXGrid = (int) (Math.random() * (11 - blockTypes[block][rotationState][0].length));
     leftmostYGrid = 0;
@@ -224,17 +224,16 @@ class Blocks {
     }
     return lowest;
   }
-  boolean incidentOrNot(PVector leftmostOutline) { // Bugged
+  boolean incidentOrNot(PVector leftmostOutline) {
   ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
   // System.out.println(outlineCoords);
     boolean incident = false;
     for (PVector i : outlineCoords) {
-      incident |= coordinates[(int) i.y][(int) i.x].filled != false;
+      incident |= coordinates[(int) i.y][(int) i.x].filled != false; // Top Glitch
     }
-    
     return incident;
   }
-  ArrayList<PVector> outlineCoordinates(PVector leftmostOutline) { // SUPER Bugged
+  ArrayList<PVector> outlineCoordinates(PVector leftmostOutline) { 
     ArrayList<PVector> outlineCoords = new ArrayList<PVector>();
   for (int i = 0; i < curBlock.length; i++) {
       for (int j = 0; j < curBlock[i].length; j++) {

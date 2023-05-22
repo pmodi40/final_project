@@ -6,12 +6,13 @@ public Grid[][] coordinates = new Grid[20][10];
 public Grid[][] border = new Grid[24][18];
 public Blocks curBlock;
 public color defaultColor = color(0, 0, 0);
-public color defaultBorderColor = color(255, 0, 0);
+public color defaultBorderColor = color(175, 139, 125);
 public int speed = 100;
 public int bottomYCor;
 public int dropStep = 1;
 public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
 public int lastFrameCount;
+public int score;
 // Setup Method
 void setup() {
     size(540, 720);
@@ -22,7 +23,9 @@ void setup() {
     regenBlock();
 }
 void draw() {
+  background(51);
   curBlock.update();
+  drawBorder();
   adjustLines();
   updateGrid();
   outlineDrop();
@@ -33,7 +36,15 @@ void draw() {
   }
   // System.out.println(curBlock.coordIncident());
 }
-
+void mouseClicked() {
+  PVector leftDrop = curBlock.coordIncident();
+  curBlock.leftmostXGrid = (int) leftDrop.x;
+  curBlock.leftmostYGrid = (int) leftDrop.y;
+  curBlock.update();
+  updateGrid();
+  drawGrid();
+  coincidence();
+}
 void keyPressed() {
   if (key == "A".charAt(0)) {
     curBlock.rotateB(1);
@@ -99,6 +110,7 @@ void drawGrid() {
             stroke(temp.border);
             fill(temp.curColor);
             square(temp.leftXCor, temp.leftYCor, 30);
+            stroke(defaultColor);
         }
     }
 }
