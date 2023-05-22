@@ -7,11 +7,11 @@ public Grid[][] border = new Grid[24][18];
 public Blocks curBlock;
 public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(255, 0, 0);
-public int speed = 40;
+public int speed = 100;
 public int bottomYCor;
-public int lastFrameCount = 0;
-public int allowance = 0;
-public boolean drop = true;
+public int dropStep = 1;
+public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
+public int lastFrameCount;
 // Setup Method
 void setup() {
     size(540, 720);
@@ -22,11 +22,14 @@ void setup() {
     regenBlock();
 }
 void draw() {
+  curBlock.update();
+  adjustLines();
   updateGrid();
   outlineDrop();
   drawGrid();
   if (frameCount % speed == 0) {
     updateBlock();
+    speed = 100;
   }
   // System.out.println(curBlock.coordIncident());
 }
@@ -36,23 +39,17 @@ void keyPressed() {
     curBlock.rotateB(1);
     curBlock.update();
     if (incident()) curBlock.rotateB(-1);
-    else lastFrameCount = frameCount;
-    key = 'Z';
   }
   else if (key == "D".charAt(0)) {
     curBlock.rotateB(-1);
     curBlock.update();
     if (incident()) curBlock.rotateB(1);
-    else lastFrameCount = frameCount;
-    key = 'Z';
   }
   else if (keyCode == LEFT) {
     if (curBlock.leftmostXGrid > 0) {
       curBlock.leftmostXGrid--;
       curBlock.update();
       if (incident()) curBlock.leftmostXGrid++;
-      else lastFrameCount = frameCount;
-      keyCode = 200;
     }
   }
   else if (keyCode == RIGHT) {
@@ -60,18 +57,20 @@ void keyPressed() {
       curBlock.leftmostXGrid++;
       curBlock.update();
       if (incident()) curBlock.leftmostXGrid--;
-      else lastFrameCount = frameCount;
-      keyCode = 200;
     }
   }
   else if (keyCode == DOWN) {
-    speed = 20;
+    speed = 5;
+  }
+  else if (keyCode == UP) {
+    speed = 5;
   }
   curBlock.update();
   updateGrid();
   drawGrid();
   coincidence();
 }
+
 
 // Grid Initialization
 void gridCreation() {
@@ -122,7 +121,6 @@ void updateGrid() {
       if (k.curColor == defaultColor) k.filled = false;
       if (k.filled == false) k.setColor(defaultColor);
       k.border = color(0, 0, 0);
-      if (k.filled == true) k.setColor(color(0, 255, 0));
     }
   }
   for (PVector i : curBlock.coords) {
@@ -147,7 +145,6 @@ void drop() {
 void regenBlock() {
   curBlock = new Blocks();
   bottomYCor = 0;
-  lastFrameCount = 0;
 }
 
 void outlineDrop() {
@@ -185,10 +182,10 @@ void coincidence() {
   int bottomYIncidence = (int) incidence.y + yLen;
   if (bottomYCor > 19 || bottomYCor == bottomYIncidence) {
     for (PVector i : curBlock.coords) {
-      System.out.println(i.y);
+      // System.out.println(i.y);
       int corX = (int) i.x - curBlock.leftmostXGrid;
       int corY = (int) i.y - curBlock.leftmostYGrid;
-      System.out.println("" + corX + "    " + corY);
+      // System.out.println("" + corX + "    " + corY);
       if (curBlock.curBlock[corY][corX] == 1)
       coordinates[(int) i.y][(int) i.x].filled = true;
     }
@@ -196,6 +193,53 @@ void coincidence() {
     }
   }
 
+void adjustLines(/* In Progress*/) {
+  if (linesToRemove.size() == 0) {
+  for (int i = 19; i >= 0; i--) {
+    boolean filled = true;
+    for (Grid k : coordinates[i]) {
+      filled &= k.filled;
+    }
+    if (filled) {
+      linesToRemove.add(i);
+    }
+  }
+  for (Integer i : linesToRemove) {
+    for (Grid k : coordinates[i]) {
+      k.setColor(color(255, 255, 255));
+      updateGrid();
+      outlineDrop();
+      drawGrid();
+    }
+  }
+  lastFrameCount = frameCount;
+  }
+  if (Math.abs(lastFrameCount - frameCount) > 49) { // Adapt to middle clears!
+    for (Integer i : linesToRemove) {
+      for (Grid k : coordinates[i]) {
+        k.filled = false;
+        k.setColor(defaultColor);
+      }
+    }
+    Grid[][] newCoordinates = new Grid[20][10];
+    for (int i = 0; i < coordinates.length - 1; i++) {
+      for (int j = 0; j < coordinates[i].length; j++) {
+        Grid oldGrid = coordinates[i][j];
+        Grid newGrid = new Grid(oldGrid.leftXCor, oldGrid.leftYCor + 30, oldGrid.curColor);
+        newGrid.filled = oldGrid.filled;
+        newGrid.border = oldGrid.border;
+        newCoordinates[i + 1][j] = newGrid;
+      }
+    }
+    for (int i = 0; i < newCoordinates[0].length; i++) {
+      newCoordinates[0][i] = new Grid(30 * i + 120, 60, defaultColor);
+    }
+    coordinates = newCoordinates;
+    curBlock.update();
+    linesToRemove = new ArrayList<Integer>();
+    lastFrameCount = 0;
+  }
+}
 
 /**
 Game Procedure:

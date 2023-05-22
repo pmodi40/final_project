@@ -143,7 +143,9 @@ class Blocks {
   }
   public Blocks(/* Random Constructor*/) {
     this.block = (int) (7 * Math.random());
-    this.rotationState = 0;
+    if (block < 4) {
+      this.rotationState = (int) (5 * Math.random());
+    }
     leftmostXGrid = (int) (Math.random() * (11 - blockTypes[block][rotationState][0].length));
     leftmostYGrid = 0;
     curBlock = blockTypes[block][rotationState];
