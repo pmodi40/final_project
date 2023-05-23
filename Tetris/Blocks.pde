@@ -230,7 +230,9 @@ class Blocks {
     ArrayList<PVector> test = outlineCoordinates(check);
     boolean oneAbove = false;
     for (PVector k : test) {
-      oneAbove |= coordinates[(int) k.y + 1][(int) k.x].filled;
+      int t = (int) k.y + 1;
+      if (t > 19) t = 19;
+      oneAbove |= coordinates[t][(int) k.x].filled;
     }
     if (!oneAbove) {
       check.y++;
