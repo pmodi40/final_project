@@ -220,10 +220,23 @@ class Blocks {
       }
     }
     if ((int) lowest.x == 0 && (int) lowest.y == -1) {
-      return new PVector(leftmostXGrid, 20 - curBlock.length);
+      PVector returnVal = new PVector(leftmostXGrid, 20 - curBlock.length);
+      return returnVal;
     }
+    confirm(lowest);
     return lowest;
   }
+  void confirm(PVector check) {
+    ArrayList<PVector> test = outlineCoordinates(check);
+    boolean oneAbove = false;
+    for (PVector k : test) {
+      oneAbove |= coordinates[(int) k.y + 1][(int) k.x].filled;
+    }
+    if (!oneAbove) {
+      check.y++;
+    }
+  }
+  
   boolean incidentOrNot(PVector leftmostOutline) {
   ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
   // System.out.println(outlineCoords);

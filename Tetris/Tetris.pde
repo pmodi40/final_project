@@ -233,18 +233,21 @@ void adjustLines(/* In Progress*/) {
         k.setColor(defaultColor);
       }
     }
-    Grid[][] newCoordinates = new Grid[20][10];
-    for (int i = 0; i < coordinates.length - 1; i++) {
-      for (int j = 0; j < coordinates[i].length; j++) {
-        Grid oldGrid = coordinates[i][j];
-        Grid newGrid = new Grid(oldGrid.leftXCor, oldGrid.leftYCor + 30, oldGrid.curColor);
-        newGrid.filled = oldGrid.filled;
-        newGrid.border = oldGrid.border;
-        newCoordinates[i + 1][j] = newGrid;
+    Grid[][] newCoordinates = deepCopy(coordinates);
+    for (int k = linesToRemove.size() - 1; k >= 0; k--) {
+      for (int i = 0; i < linesToRemove.get(k); i++) {
+        for (int j = 0; j < coordinates[i].length; j++) {
+          Grid oldGrid = coordinates[i][j];
+          Grid newGrid = new Grid(oldGrid.leftXCor, oldGrid.leftYCor + 30, oldGrid.curColor);
+          newGrid.filled = oldGrid.filled;
+          newGrid.border = oldGrid.border;
+          newCoordinates[i + 1][j] = newGrid;
+        }
       }
-    }
-    for (int i = 0; i < newCoordinates[0].length; i++) {
-      newCoordinates[0][i] = new Grid(30 * i + 120, 60, defaultColor);
+      for (int i = 0; i < newCoordinates[0].length; i++) {
+        newCoordinates[0][i] = new Grid(30 * i + 120, 60, defaultColor);
+      }
+      coordinates = deepCopy(newCoordinates);
     }
     coordinates = newCoordinates;
     curBlock.update();
@@ -252,7 +255,15 @@ void adjustLines(/* In Progress*/) {
     lastFrameCount = 0;
   }
 }
-
+Grid[][] deepCopy(Grid[][] toBeCopied) {
+  Grid[][] copy = new Grid[toBeCopied.length][toBeCopied[0].length];
+  for (int i = 0; i < toBeCopied.length; i++) {
+    for (int j = 0; j < toBeCopied[i].length; j++) {
+      copy[i][j] = toBeCopied[i][j];
+    }
+  }
+  return copy;
+}
 /**
 Game Procedure:
 1. Board Drawn
