@@ -188,9 +188,7 @@ class Blocks {
     return colors[block];
   }
   PVector coordIncident() {
-    System.out.println(keyCode);
     update();
-    System.out.println(coords);
     ArrayList<PVector> incidentPoints = new ArrayList<PVector>();
     for (PVector i : coords) { // Issue is here!
       for (int j = (int) i.y; j < 20; j++) {
@@ -199,13 +197,15 @@ class Blocks {
         }
       }
     }
+    /*
     if (incidentPoints.size() == 1) {
       incidentPoints.set(0, new PVector((int) incidentPoints.get(0).x, (int) incidentPoints.get(0).y + 1));
     }
-    System.out.println(incidentPoints);
+    */
+    PVector bottomV = new PVector(leftmostXGrid, 20 - curBlock.length);
     PVector lowest = new PVector(0, -1);
     for (PVector i : incidentPoints) {
-      if(!incidentOrNot(i) && (int) i.y > (int) lowest.y) {
+      if(!incidentOrNot(i) && (int) i.y >= (int) lowest.y) {
         ArrayList<PVector> possibleDrop = outlineCoordinates(i);
         boolean clearPath = true;
         for (PVector j : possibleDrop) {
@@ -213,15 +213,15 @@ class Blocks {
             clearPath &= coordinates[k][(int) j.x].filled == false;
           }
         }
-        System.out.println(clearPath);
+        // System.out.println(clearPath);
         if (clearPath) {
           lowest = i;
         }
       }
     }
-    if ((int) lowest.x == 0 && (int) lowest.y == -1) {
-      PVector returnVal = new PVector(leftmostXGrid, 20 - curBlock.length);
-      return returnVal;
+    System.out.println(lowest);
+    if (((int) lowest.x == 0 && (int) lowest.y == -1) || (int) bottomV.y < (int) lowest.y) {
+      return bottomV;
     }
     confirm(lowest);
     return lowest;
@@ -245,7 +245,7 @@ class Blocks {
   // System.out.println(outlineCoords);
     boolean incident = false;
     for (PVector i : outlineCoords) {
-      incident |= coordinates[(int) i.y][(int) i.x].filled != false; // Top Glitch
+      incident |= coordinates[(int) i.y][(int) i.x].filled == true; // Top Glitch
     }
     return incident;
   // }

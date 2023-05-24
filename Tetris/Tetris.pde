@@ -144,6 +144,7 @@ void updateGrid() {
 
 void updateBlock() {
   drop();
+  System.out.println(score);
 }
 
 void drop() {
@@ -198,9 +199,12 @@ void coincidence() {
       int corX = (int) i.x - curBlock.leftmostXGrid;
       int corY = (int) i.y - curBlock.leftmostYGrid;
       // System.out.println("" + corX + "    " + corY);
-      if (curBlock.curBlock[corY][corX] == 1)
-      coordinates[(int) i.y][(int) i.x].filled = true;
+      if (curBlock.curBlock[corY][corX] == 1) {
+        coordinates[(int) i.y][(int) i.x].filled = true;
+        score += 2; 
+      }
     }
+    adjustLines();
     regenBlock();
     }
   }
@@ -232,6 +236,7 @@ void adjustLines(/* In Progress*/) {
         k.filled = false;
         k.setColor(defaultColor);
       }
+      score += 100;
     }
     Grid[][] newCoordinates = deepCopy(coordinates);
     for (int k = linesToRemove.size() - 1; k >= 0; k--) {
