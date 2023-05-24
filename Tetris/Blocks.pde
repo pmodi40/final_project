@@ -143,7 +143,7 @@ class Blocks {
   }
   public Blocks(/* Random Constructor*/) {
     this.block = (int) (7 * Math.random());
-    if (block < 4) {
+    if (block < 5) {
       this.rotationState = (int) (4 * Math.random());
     }
     leftmostXGrid = (int) (Math.random() * (11 - blockTypes[block][rotationState][0].length));
@@ -240,6 +240,7 @@ class Blocks {
   }
   
   boolean incidentOrNot(PVector leftmostOutline) {
+  // try {
   ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
   // System.out.println(outlineCoords);
     boolean incident = false;
@@ -247,6 +248,11 @@ class Blocks {
       incident |= coordinates[(int) i.y][(int) i.x].filled != false; // Top Glitch
     }
     return incident;
+  // }
+  // catch (Exception e) {
+    
+ //   return true;
+ // }
   }
   ArrayList<PVector> outlineCoordinates(PVector leftmostOutline) { 
     ArrayList<PVector> outlineCoords = new ArrayList<PVector>();
