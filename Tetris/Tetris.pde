@@ -162,14 +162,7 @@ void regenBlock() {
 
 void outlineDrop() {
   PVector leftmostOutline = curBlock.coordIncident();
-  ArrayList<PVector> outlineCoords = new ArrayList<PVector>();
-  for (int i = 0; i < curBlock.curBlock.length; i++) {
-      for (int j = 0; j < curBlock.curBlock[i].length; j++) {
-        if (curBlock.curBlock[i][j] == 1) {
-          outlineCoords.add(new PVector((int) leftmostOutline.x + j, (int) leftmostOutline.y + i));
-        }
-      }
-    }
+  ArrayList<PVector> outlineCoords = curBlock.outlineCoordinates(leftmostOutline);
     for (PVector i : outlineCoords) {
       coordinates[(int) i.y][(int) i.x].border = curBlock.shapeToColor();
     }
@@ -204,12 +197,16 @@ void coincidence() {
         score += 2; 
       }
     }
-    adjustLines();
     regenBlock();
+    adjustLines();
+    
     }
   }
 
-void adjustLines(/* In Progress*/) {
+void adjustLines() {
+  curBlock.update();
+  updateGrid();
+  drawGrid();
   if (linesToRemove.size() == 0) {
   for (int i = 19; i >= 0; i--) {
     boolean filled = true;
