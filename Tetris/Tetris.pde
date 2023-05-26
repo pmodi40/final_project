@@ -3,7 +3,7 @@ Pranjal Modi - Tetris Final Project
 */
 // Fields
 public Grid[][] coordinates = new Grid[20][10];
-public Grid[][] border = new Grid[24][18];
+public Grid[][] border = new Grid[28][18];
 public Blocks curBlock;
 public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(175, 139, 125);
@@ -15,7 +15,7 @@ public int lastFrameCount;
 public int score;
 // Setup Method
 void setup() {
-    size(540, 720);
+    size(540, 840);
     gridCreation();
     borderCreation();
     drawGrid();
@@ -86,7 +86,7 @@ void keyPressed() {
 // Grid Initialization
 void gridCreation() {
     int xOffset = 120;
-    int yOffset = 60;
+    int yOffset = 120;
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
             coordinates[i][j] = new Grid(30 * j + xOffset, 30 * i + yOffset, defaultColor);
@@ -94,10 +94,37 @@ void gridCreation() {
     }
 }
 void borderCreation() {
-    for (int i = 0; i < 24; i++) {
+    for (int i = 0; i < 28; i++) {
         for (int j = 0; j < 18; j++) {
-            if (i < 2 || i > 21 || j < 4 || j > 13) {
+            if (i < 4 || i > 23 || j < 4 || j > 13) {
+              if (i > 0 && i < 3 && j > 3 && j < 14) {
+                Grid toBeAdded = new Grid(30 * j, 30 * i, color(112, 185, 247));
+                toBeAdded.nameZone = true;
+                border[i][j] = toBeAdded;
+              }
+              else if (i > 24 && i < 27 && j > 3 && j < 14) {
+                Grid toBeAdded = new Grid(30 * j, 30 * i, color(112, 185, 247));
+                toBeAdded.scoreZone = true;
+                border[i][j] = toBeAdded;
+              }
+              else if (i > 0 && i < 3 && j > 0 && j < 3) {
+                Grid toBeAdded = new Grid(30 * j, 30 * i, color(227, 36, 18));
+                toBeAdded.endZone = true;
+                border[i][j] = toBeAdded;
+              }
+              else if (i > 0 && i < 3 && j > 14 && j < 17) {
+                Grid toBeAdded = new Grid(30 * j, 30 * i, color(85, 80, 80));
+                toBeAdded.pauseZone = true;
+                border[i][j] = toBeAdded;
+              }
+              else if (i > 11 && i < 16 && j > 14 && j < 17) {
+                Grid toBeAdded = new Grid(30 * j, 30 * i, color(0, 0, 0));
+                toBeAdded.nextZone = true;
+                border[i][j] = toBeAdded;
+              }
+              else {
                 border[i][j] = new Grid(30 * j, 30 * i, defaultBorderColor);
+              }
             }
         }
     }
@@ -119,8 +146,9 @@ void drawBorder() {
         for (int j = 0; j < border[i].length; j++) {
             Grid temp = border[i][j];
             if (temp != null) {
-                fill(temp.curColor);
-                square(temp.leftXCor, temp.leftYCor, 30);
+              noStroke();
+              fill(temp.curColor);
+              square(temp.leftXCor, temp.leftYCor, 30);
             }
         }
     }
@@ -194,7 +222,7 @@ void coincidence() {
       // System.out.println("" + corX + "    " + corY);
       if (curBlock.curBlock[corY][corX] == 1) {
         coordinates[(int) i.y][(int) i.x].filled = true;
-        score += 2; 
+        score += 1; 
       }
     }
     regenBlock();
@@ -228,12 +256,12 @@ void adjustLines() {
   lastFrameCount = frameCount;
   }
   if (Math.abs(lastFrameCount - frameCount) > 49) { // Adapt to middle clears!
+  score += Math.pow(5, linesToRemove.size());
     for (Integer i : linesToRemove) {
       for (Grid k : coordinates[i]) {
         k.filled = false;
         k.setColor(defaultColor);
       }
-      score += 100;
     }
     Grid[][] newCoordinates = deepCopy(coordinates);
     for (int k = linesToRemove.size() - 1; k >= 0; k--) {
@@ -247,7 +275,7 @@ void adjustLines() {
         }
       }
       for (int i = 0; i < newCoordinates[0].length; i++) {
-        newCoordinates[0][i] = new Grid(30 * i + 120, 60, defaultColor);
+        newCoordinates[0][i] = new Grid(30 * i + 120, 120, defaultColor);
       }
       coordinates = deepCopy(newCoordinates);
     }

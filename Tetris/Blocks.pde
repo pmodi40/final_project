@@ -226,7 +226,6 @@ class Blocks {
         }
       }
     }
-    System.out.println(lowest);
     if (((int) lowest.x == 0 && (int) lowest.y == -1) || (int) bottomV.y < (int) lowest.y) {
       return bottomV;
     }
@@ -247,19 +246,19 @@ class Blocks {
   }
   
   boolean incidentOrNot(PVector leftmostOutline) {
-  // try {
-  ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
-  // System.out.println(outlineCoords);
-    boolean incident = false;
-    for (PVector i : outlineCoords) {
-      incident |= coordinates[(int) i.y][(int) i.x].filled == true; // Top Glitch
-    }
-    return incident;
-  // }
-  // catch (Exception e) {
-    
- //   return true;
- // }
+    // try {
+    ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
+    // System.out.println(outlineCoords);
+      boolean incident = false;
+      for (PVector i : outlineCoords) {
+        incident |= coordinates[(int) i.y][(int) i.x].filled == true; // Top Glitch
+      }
+      return incident;
+    // }
+    // catch (Exception e) {
+      
+   //   return true;
+   // }
   }
   ArrayList<PVector> outlineCoordinates(PVector leftmostOutline) { 
     ArrayList<PVector> outlineCoords = new ArrayList<PVector>();

@@ -7,6 +7,11 @@ class Grid {
     public int leftYCor;
     public color border = color(0, 0, 0);
     public boolean filled = false;
+    public boolean nameZone = false;
+    public boolean scoreZone = false;
+    public boolean nextZone = false;
+    public boolean endZone = false;
+    public boolean pauseZone = false;
     // Constructor(s)
     public Grid(int leftXCor, int leftYCor, color curColor) {
         this.leftXCor = leftXCor;
