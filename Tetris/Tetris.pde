@@ -4,7 +4,9 @@ Pranjal Modi - Tetris Final Project
 // Fields
 public Grid[][] coordinates = new Grid[20][10];
 public Grid[][] border = new Grid[28][18];
+public Grid[][] nextCoords = new Grid[12][3];
 public Blocks curBlock;
+public Blocks[] nextBlocks = new Blocks[3];
 public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(175, 139, 125);
 public int speed = 100;
@@ -13,14 +15,24 @@ public int dropStep = 1;
 public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
 public int lastFrameCount;
 public int score;
+public PFont fontToUse;
 // Setup Method
 void setup() {
     size(540, 840);
+    fontToUse = loadFont("PTMono-Bold-60.vlw");
     gridCreation();
     borderCreation();
     drawGrid();
     drawBorder();
+    for (int i = 0; i < 3; i++) {
+      Blocks newB = new Blocks();
+      newB.rotationState = 0;
+      nextBlocks[i] = newB;
+    }
     regenBlock();
+    createNext();
+    updateNext();
+    drawNext();
 }
 void draw() {
   background(51);
@@ -30,6 +42,10 @@ void draw() {
   updateGrid();
   outlineDrop();
   drawGrid();
+  updateScoreTicker();
+  createNext();
+  updateNext();
+  drawNext();
   if (frameCount % speed == 0) {
     updateBlock();
     speed = 100;
@@ -37,13 +53,22 @@ void draw() {
   // System.out.println(curBlock.coordIncident());
 }
 void mouseClicked() {
-  PVector leftDrop = curBlock.coordIncident();
-  curBlock.leftmostXGrid = (int) leftDrop.x;
-  curBlock.leftmostYGrid = (int) leftDrop.y;
-  curBlock.update();
-  updateGrid();
-  drawGrid();
-  coincidence();
+  if (pmouseX > 30 && pmouseX < 90 && pmouseY > 30 && pmouseY < 90) {
+    end();
+    exit();
+  }
+  else if (pmouseX > 420 && pmouseX < 480 && pmouseY > 30 && pmouseY < 90) {
+    delay(5000);
+  }
+  else {
+    PVector leftDrop = curBlock.coordIncident();
+    curBlock.leftmostXGrid = (int) leftDrop.x;
+    curBlock.leftmostYGrid = (int) leftDrop.y;
+    curBlock.update();
+    updateGrid();
+    drawGrid();
+    coincidence();
+  }
 }
 void keyPressed() {
   if (key == "A".charAt(0)) {
@@ -117,8 +142,8 @@ void borderCreation() {
                 toBeAdded.pauseZone = true;
                 border[i][j] = toBeAdded;
               }
-              else if (i > 11 && i < 16 && j > 14 && j < 17) {
-                Grid toBeAdded = new Grid(30 * j, 30 * i, color(0, 0, 0));
+              else if (i > 10 && i < 17 && j > 14 && j < 17) {
+                Grid toBeAdded = new Grid(30 * j, 30 * i, defaultBorderColor);
                 toBeAdded.nextZone = true;
                 border[i][j] = toBeAdded;
               }
@@ -184,7 +209,11 @@ void drop() {
 }
 
 void regenBlock() {
-  curBlock = new Blocks();
+  int nextBlock = nextBlocks[0].block;
+  curBlock = new Blocks(nextBlock);
+  nextBlocks[0] = nextBlocks[1];
+  nextBlocks[1] = nextBlocks[2];
+  nextBlocks[2] = new Blocks();
   bottomYCor = 0;
 }
 
@@ -293,6 +322,79 @@ Grid[][] deepCopy(Grid[][] toBeCopied) {
     }
   }
   return copy;
+}
+String repeat(String unit, int num) {
+  String accum = "";
+  for (int i = 0; i < num; i++) {
+    accum += unit;
+  }
+  return accum;
+}
+void updateScoreTicker() {
+  textAlign(CENTER);
+  textFont(fontToUse);
+  fill(color(255, 255, 255));
+  textSize(60);
+  int numZero = 6 - len(score);
+  String displayMark = repeat("0", numZero) + score;
+  text(displayMark, border[25][4].leftXCor, border[25][4].leftYCor + 7, 300, 60); 
+  System.out.println(textAscent());
+}
+void drawNext() {
+  for (int i = 0; i < nextCoords.length; i++) {
+    for (int j = 0; j < nextCoords[0].length; j++) {
+      Grid inQuestion = nextCoords[i][j];
+      fill(inQuestion.curColor);
+      rect(inQuestion.leftXCor, inQuestion.leftYCor, 20, 15);
+    }
+  }
+}
+void createNext() {
+  int xOffset = 450;
+  int yOffset = 300;
+  for (int i = 0; i < 12; i++) {
+      for (int j = 0; j < 3; j++) {
+          nextCoords[i][j] = new Grid(20 * j + xOffset, 15 * i + yOffset, defaultColor);
+      }
+  }
+}
+void updateNext() {
+  for (int i = 0; i < nextBlocks.length; i++) {
+    Blocks toBeUsed = nextBlocks[i];
+    int gridOffset = 0;
+    if (toBeUsed.block < 6) {
+      gridOffset = 1;
+    }
+    ArrayList<PVector> newCoords = new ArrayList<PVector>();
+    for (int v = 0; v < toBeUsed.curBlock.length; v++) {
+      for (int j = 0; j < toBeUsed.curBlock[0].length; j++) {
+        if (toBeUsed.curBlock[v][j] == 1) {
+          int off = j;
+          if (toBeUsed.block > 4) off++;
+          newCoords.add(new PVector(off, i * 4 + gridOffset + v));
+        }
+      }
+    }
+    System.out.println(newCoords);
+    for (PVector k : newCoords) {
+      int x = (int) k.x;
+      int y = (int) k.y;
+      nextCoords[y][x].curColor = toBeUsed.shapeToColor();
+    }
+  }
+}
+int len(int num) {
+  String numS = "" + num;
+  return numS.length();
+}
+void end() {
+  for (Grid[] k : coordinates) {
+    for (Grid j : k) {
+      j.curColor = defaultColor;
+    }
+  }
+  updateGrid();
+  drawGrid();
 }
 /**
 Game Procedure:

@@ -10,6 +10,10 @@ class Blocks {
   private final int[][][][] blockTypes = {
     { // L Shaped
       {
+        {0, 0, 1},
+        {1, 1, 1}
+      },
+      {
         {1, 0},
         {1, 0},
         {1, 1}
@@ -22,18 +26,9 @@ class Blocks {
         {1, 1},
         {0, 1},
         {0, 1}
-      },
-      {
-        {0, 0, 1},
-        {1, 1, 1}
       }
     },
     { // J Shaped
-      {
-        {0, 1},
-        {0, 1},
-        {1, 1}
-      },
       {
         {1, 0, 0},
         {1, 1, 1}
@@ -46,6 +41,11 @@ class Blocks {
       {
         {1, 1, 1},
         {0, 0, 1}
+      },
+      {
+        {0, 1},
+        {0, 1},
+        {1, 1}
       }
     },
     { // T Shaped
@@ -79,13 +79,13 @@ class Blocks {
         {0, 1}
       },
       {
-        {1, 1, 0},
-        {0, 1, 1}
+        {0, 1, 1},
+        {1, 1, 0}
       },
       {
-        {0, 1},
+        {1, 0},
         {1, 1},
-        {1, 0}
+        {0, 1}
       }
     },
     { // Z Shaped
@@ -129,9 +129,13 @@ class Blocks {
   public int leftmostXGrid;
   public int leftmostYGrid;
   // Constructor(s)
-  public Blocks(int block, int rotationState) {
+  public Blocks(int block) {
     this.block = block;
-    this.rotationState = rotationState;
+    if (block < 5) {
+      this.rotationState = (int) (4 * Math.random());
+    }
+    leftmostXGrid = (int) (Math.random() * (11 - blockTypes[block][rotationState][0].length));
+    leftmostYGrid = 0;
     curBlock = blockTypes[block][rotationState];
   }
   public Blocks(int block, int rotationState, int leftmostXGrid, int leftmostYGrid) {
@@ -143,9 +147,11 @@ class Blocks {
   }
   public Blocks(/* Random Constructor*/) {
     this.block = (int) (7 * Math.random());
+    /*
     if (block < 5) {
       this.rotationState = (int) (4 * Math.random());
     }
+    */
     leftmostXGrid = (int) (Math.random() * (11 - blockTypes[block][rotationState][0].length));
     leftmostYGrid = 0;
     curBlock = blockTypes[block][rotationState];
