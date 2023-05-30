@@ -16,6 +16,10 @@ public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
 public int lastFrameCount;
 public int score;
 public PFont fontToUse;
+public Level curLevel = new Level("Level One", 1, 100, 400);
+public boolean paused = false;
+// Constants
+public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
 // Setup Method
 void setup() {
     size(540, 840);
@@ -35,30 +39,33 @@ void setup() {
     drawNext();
 }
 void draw() {
-  background(51);
-  curBlock.update();
-  drawBorder();
-  adjustLines();
-  updateGrid();
-  outlineDrop();
-  drawGrid();
-  updateScoreTicker();
-  createNext();
-  updateNext();
-  drawNext();
-  if (frameCount % speed == 0) {
-    updateBlock();
-    speed = 100;
-  }
-  // System.out.println(curBlock.coordIncident());
+    if (!paused) {
+      background(51);
+      curBlock.update();
+      drawBorder();
+      adjustLines();
+      updateGrid();
+      outlineDrop();
+      lvlUp();
+      drawGrid();
+      updateScoreTicker();
+      updateLevelTicker();
+      createNext();
+      updateNext();
+      drawNext();
+      if (frameCount % curLevel.lvlSpeed == 0) {
+        updateBlock();
+        curLevel.lvlSpeed = speed;
+      }
+    }
 }
 void mouseClicked() {
-  if (pmouseX > 30 && pmouseX < 90 && pmouseY > 30 && pmouseY < 90) {
+  if (mouseX > 30 && mouseX < 90 && mouseY > 30 && mouseY < 90) {
     end();
     exit();
   }
-  else if (pmouseX > 420 && pmouseX < 480 && pmouseY > 30 && pmouseY < 90) {
-    delay(5000);
+  else if (mouseX > 420 && mouseX < 480 && mouseY > 30 && mouseY < 90) {
+    paused = !paused;
   }
   else {
     PVector leftDrop = curBlock.coordIncident();
@@ -96,10 +103,10 @@ void keyPressed() {
     }
   }
   else if (keyCode == DOWN) {
-    speed = 5;
+    curLevel.lvlSpeed = 5;
   }
   else if (keyCode == UP) {
-    speed = 5;
+    curLevel.lvlSpeed = 5;
   }
   curBlock.update();
   updateGrid();
@@ -197,7 +204,6 @@ void updateGrid() {
 
 void updateBlock() {
   drop();
-  System.out.println(score);
 }
 
 void drop() {
@@ -205,6 +211,7 @@ void drop() {
   curBlock.leftmostYGrid++;
   curBlock.update();
   updateGrid();
+  drawGrid();
   coincidence();
 }
 
@@ -331,14 +338,10 @@ String repeat(String unit, int num) {
   return accum;
 }
 void updateScoreTicker() {
-  textAlign(CENTER);
-  textFont(fontToUse);
-  fill(color(255, 255, 255));
-  textSize(60);
+  textInit(60);
   int numZero = 6 - len(score);
   String displayMark = repeat("0", numZero) + score;
   text(displayMark, border[25][4].leftXCor, border[25][4].leftYCor + 7, 300, 60); 
-  System.out.println(textAscent());
 }
 void drawNext() {
   for (int i = 0; i < nextCoords.length; i++) {
@@ -375,7 +378,6 @@ void updateNext() {
         }
       }
     }
-    System.out.println(newCoords);
     for (PVector k : newCoords) {
       int x = (int) k.x;
       int y = (int) k.y;
@@ -395,6 +397,65 @@ void end() {
   }
   updateGrid();
   drawGrid();
+}
+void updateLevelTicker() {
+  int levelNum = curLevel.num;
+  String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
+  textInit((int) (480 / toBeDisplayed.length()));
+  int above = (int) textAscent();
+  text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
+}
+void textInit(int size) {
+  textAlign(CENTER);
+  textFont(fontToUse);
+  fill(color(255, 255, 255));
+  textSize(size);
+}
+void updateLevel() {
+  resetBoard();
+  int newNum = curLevel.num + 1;
+  int newSpeed = expSpeed(newNum);
+  int newScore = expScore(newNum);
+  speed = newSpeed;
+  Level newLevel = new Level("Level " + newNum, newNum, newSpeed, newScore);
+  curLevel = newLevel;
+}
+void lvlUp() {
+  if (score > curLevel.lvlScore) {
+    background(51);
+    drawBorder();
+    updateScoreTicker();
+    int levelNum = curLevel.num;
+    String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
+    textInit((int) (480 / toBeDisplayed.length()));
+    int above = (int) textAscent();
+    fill(color(0, 255, 0));
+    text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
+    createNext();
+    updateNext();
+    drawNext();
+    delay(5000);
+    updateLevel();
+  }
+}
+void resetBoard() {
+  for (Grid[] i : coordinates) {
+    for (Grid k : i) {
+      k.curColor = defaultColor;
+      k.filled = false;
+    }
+  }
+  score = 0;
+  curBlock = null;
+  bottomYCor = 0;
+  paused = false;
+  regenBlock();
+}
+int expSpeed(int seed) {
+  return (int) (96 * Math.pow(1.25, -1. * (seed - 1)) + 4);
+}
+int expScore(int seed) {
+  return (int) (999999. / (1. + Math.exp(logisticConstant * (seed - 21))));
 }
 /**
 Game Procedure:
