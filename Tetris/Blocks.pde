@@ -120,6 +120,9 @@ class Blocks {
         {1},
         {1},
         {1}
+      },
+      {
+        {1, 1, 1, 1}
       }
     }
   };
@@ -175,12 +178,13 @@ class Blocks {
       rotationState += dir;
       if (rotationState > 1) rotationState = 0;
       if (rotationState < 0) rotationState = 1;
+      curBlock = blockTypes[block][rotationState];
     }
   }
   
   void update() {
     coords = new ArrayList<PVector>();
-    if (block < 6 || block == 6 && rotationState == 0) { 
+    // if (block < 6 || block == 6 && rotationState == 0) { 
       for (int i = 0; i < curBlock.length; i++) {
         for (int j = 0; j < curBlock[i].length; j++) {
           if (curBlock[i][j] == 1) {
@@ -188,12 +192,14 @@ class Blocks {
           }
         }
       }
-    }
+   //  }
+   /*
     else {
       for (int i = 0; i < curBlock.length; i++) {
         coords.add(new PVector(leftmostXGrid + i, leftmostYGrid));
       }
     }
+    */
   }
   
   color shapeToColor() {
@@ -203,10 +209,10 @@ class Blocks {
   PVector coordIncident() {
     update();
     ArrayList<PVector> incidentPoints = new ArrayList<PVector>();
-    for (PVector i : coords) { // Issue is here!
+    for (PVector i : coords) {
       for (int j = (int) i.y; j < 20; j++) {
         if (coordinates[j][(int) i.x].filled == true) {
-          incidentPoints.add(new PVector(leftmostXGrid, j - curBlock.length));
+          incidentPoints.add(new PVector(leftmostXGrid, j - (block == 6 && rotationState == 1 ? 1 :curBlock.length)));
         }
       }
     }
@@ -215,7 +221,7 @@ class Blocks {
       incidentPoints.set(0, new PVector((int) incidentPoints.get(0).x, (int) incidentPoints.get(0).y + 1));
     }
     */
-    PVector bottomV = new PVector(leftmostXGrid, 20 - curBlock.length);
+    PVector bottomV = new PVector(leftmostXGrid, 20 - (block == 6 && rotationState == 1 ? 1 :curBlock.length));
     PVector lowest = new PVector(0, -1);
     for (PVector i : incidentPoints) {
       if(!incidentOrNot(i) && (int) i.y >= (int) lowest.y) {
@@ -268,7 +274,7 @@ class Blocks {
   }
   ArrayList<PVector> outlineCoordinates(PVector leftmostOutline) { 
     ArrayList<PVector> outlineCoords = new ArrayList<PVector>();
-    if (block < 6 || block == 6 && rotationState == 0) {
+    // if (block < 6 || block == 6 && rotationState == 0) {
       for (int i = 0; i < curBlock.length; i++) {
           for (int j = 0; j < curBlock[i].length; j++) {
             if (curBlock[i][j] == 1) {
@@ -276,12 +282,14 @@ class Blocks {
             }
           }
         }
-    }
+   // }
+   /*
     else {
       for (int i = 0; i < curBlock.length; i++) {
         outlineCoords.add(new PVector((int) leftmostOutline.x + i, (int) leftmostOutline.y));
       }
     }
+    */
     return outlineCoords;
   }
   

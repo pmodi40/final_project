@@ -16,7 +16,7 @@ public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
 public int lastFrameCount;
 public int score;
 public PFont fontToUse;
-public Level curLevel = new Level("Level One", 1, 100, 400);
+public Level curLevel = new Level("Level 1", 1, 100, 400);
 public boolean paused = false;
 // Constants
 public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
@@ -263,7 +263,6 @@ void coincidence() {
     }
     regenBlock();
     adjustLines();
-    
     }
   }
 
