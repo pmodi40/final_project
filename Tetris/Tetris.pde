@@ -18,6 +18,7 @@ public int score;
 public PFont fontToUse;
 public Level curLevel = new Level("Level 1", 1, 100, 400);
 public boolean paused = false;
+public int levelChange = 0;
 // Constants
 public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
 // Setup Method
@@ -39,25 +40,48 @@ void setup() {
     drawNext();
 }
 void draw() {
-    if (!paused) {
-      background(51);
-      curBlock.update();
-      drawBorder();
-      adjustLines();
-      updateGrid();
-      outlineDrop();
-      lvlUp();
-      drawGrid();
-      updateScoreTicker();
-      updateLevelTicker();
-      createNext();
-      updateNext();
-      drawNext();
-      if (frameCount % curLevel.lvlSpeed == 0) {
-        updateBlock();
-        curLevel.lvlSpeed = speed;
+      if (levelChange == 2) {
+        delay(5000);
+        updateLevel();
+        levelChange = 0;
       }
-    }
+      if (levelChange == 1) {
+        levelChange++;
+        background(51);
+        drawBorder();
+        curBlock = null;
+        drawGrid();
+        System.out.println(score);
+        updateScoreTicker();
+        int levelNum = curLevel.num;
+        String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
+        textInit((int) (480 / toBeDisplayed.length()));
+        int above = (int) textAscent();
+        fill(color(0, 255, 0));
+        text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
+        createNext();
+        updateNext();
+        drawNext();
+      }
+      else {
+        background(51);
+        curBlock.update();
+        drawBorder();
+        adjustLines();
+        updateGrid();
+        outlineDrop();
+        lvlUp();
+        drawGrid();
+        updateScoreTicker();
+        updateLevelTicker();
+        createNext();
+        updateNext();
+        drawNext();
+        if (frameCount % curLevel.lvlSpeed == 0) {
+          updateBlock();
+          curLevel.lvlSpeed = speed;
+        }
+      }
 }
 void mouseClicked() {
   if (mouseX > 30 && mouseX < 90 && mouseY > 30 && mouseY < 90) {
@@ -66,15 +90,19 @@ void mouseClicked() {
   }
   else if (mouseX > 420 && mouseX < 480 && mouseY > 30 && mouseY < 90) {
     paused = !paused;
+    if (paused) noLoop();
+    else loop();
   }
   else {
-    PVector leftDrop = curBlock.coordIncident();
-    curBlock.leftmostXGrid = (int) leftDrop.x;
-    curBlock.leftmostYGrid = (int) leftDrop.y;
-    curBlock.update();
-    updateGrid();
-    drawGrid();
-    coincidence();
+    if (!paused) {
+      PVector leftDrop = curBlock.coordIncident();
+      curBlock.leftmostXGrid = (int) leftDrop.x;
+      curBlock.leftmostYGrid = (int) leftDrop.y;
+      curBlock.update();
+      updateGrid();
+      drawGrid();
+      coincidence();
+    }
   }
 }
 void keyPressed() {
@@ -258,7 +286,7 @@ void coincidence() {
       // System.out.println("" + corX + "    " + corY);
       if (curBlock.curBlock[corY][corX] == 1) {
         coordinates[(int) i.y][(int) i.x].filled = true;
-        score += 1; 
+        score += 10; 
       }
     }
     regenBlock();
@@ -291,7 +319,7 @@ void adjustLines() {
   lastFrameCount = frameCount;
   }
   if (Math.abs(lastFrameCount - frameCount) > 49) { // Adapt to middle clears!
-  score += Math.pow(5, linesToRemove.size());
+  score += Math.pow(50, linesToRemove.size());
     for (Integer i : linesToRemove) {
       for (Grid k : coordinates[i]) {
         k.filled = false;
@@ -421,20 +449,7 @@ void updateLevel() {
 }
 void lvlUp() {
   if (score > curLevel.lvlScore) {
-    background(51);
-    drawBorder();
-    updateScoreTicker();
-    int levelNum = curLevel.num;
-    String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
-    textInit((int) (480 / toBeDisplayed.length()));
-    int above = (int) textAscent();
-    fill(color(0, 255, 0));
-    text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
-    createNext();
-    updateNext();
-    drawNext();
-    delay(5000);
-    updateLevel();
+    levelChange = 1;
   }
 }
 void resetBoard() {
@@ -449,6 +464,7 @@ void resetBoard() {
   bottomYCor = 0;
   paused = false;
   regenBlock();
+  linesToRemove = new ArrayList<Integer>();
 }
 int expSpeed(int seed) {
   return (int) (96 * Math.pow(1.25, -1. * (seed - 1)) + 4);

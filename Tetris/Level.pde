@@ -4,7 +4,7 @@ class Level {
   public int num;
   public int lvlSpeed;
   public int lvlScore;
-  // Constructors
+  // Constructors [No methods!]
   public Level(String name, int num, int lvlSpeed, int lvlScore) {
     this.name = name;
     this.num = num;
