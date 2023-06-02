@@ -11,14 +11,17 @@ public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(175, 139, 125);
 public int speed = 100;
 public int bottomYCor;
-public int dropStep = 1;
 public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
 public int lastFrameCount;
 public int score;
+public int highScore;
 public PFont fontToUse;
-public Level curLevel = new Level("Level 1", 1, 100, 400);
+public Level curLevel = new Level("Level 1", 1, 100, 4000);
 public boolean paused = false;
+public String gameMode = "Progression";
 public int levelChange = 0;
+private int lastI;
+private int lastG;
 // Constants
 public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
 // Setup Method
@@ -40,50 +43,92 @@ void setup() {
     drawNext();
 }
 void draw() {
-      if (levelChange == 2) {
-        delay(5000);
-        updateLevel();
-        levelChange = 0;
+  if (gameMode.equals("Progression")) {
+    if (levelChange == 2) {
+      levelChangeEnd();
+    }
+    if (levelChange == 1) {
+      levelChangeProcess();
+    }
+    else {
+      try {
+        progressionModeMain();
       }
-      if (levelChange == 1) {
-        levelChange++;
-        background(51);
-        drawBorder();
-        curBlock = null;
-        drawGrid();
-        System.out.println(score);
-        updateScoreTicker();
-        int levelNum = curLevel.num;
-        String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
-        textInit((int) (480 / toBeDisplayed.length()));
-        int above = (int) textAscent();
-        fill(color(0, 255, 0));
-        text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
-        createNext();
-        updateNext();
-        drawNext();
+      catch (Exception e) {
+        gameOver();
       }
-      else {
-        background(51);
-        curBlock.update();
-        drawBorder();
-        adjustLines();
-        updateGrid();
-        outlineDrop();
-        lvlUp();
-        drawGrid();
-        updateScoreTicker();
-        updateLevelTicker();
-        createNext();
-        updateNext();
-        drawNext();
-        if (frameCount % curLevel.lvlSpeed == 0) {
-          updateBlock();
-          curLevel.lvlSpeed = speed;
-        }
-      }
+    }
+  }
+  else if (gameMode.equals("Arcade")) {
+    
+  }
+  else if (gameMode.equals("Starting")) {
+    
+  }
+  else if (gameMode.equals("Transitioning")) {
+    
+  }
 }
-void mouseClicked() {
+void initBorder() {
+  for (int i = 0; i < border.length; i++) {
+    for (int j = 0; j < border[i].length; j++) {
+      border[i][j] = new Grid(j * 30, i * 30, color(0, 0, 0));
+    }
+  }
+}
+void drawFullBorder() {
+  for (Grid[] k : border) {
+    for (Grid v : k) {
+      
+    }
+  }
+}
+void transitionOutGame() {
+  border[lastI][lastG] = new Grid(lastG * 30, lastI * 30, color(255, 0, 0));
+}
+void levelChangeEnd() {
+  delay(5000);
+  updateLevel();
+  levelChange = 0;
+}
+void levelChangeProcess() {
+  levelChange++;
+  background(51);
+  drawBorder();
+  curBlock = null;
+  drawGrid();
+  System.out.println(score);
+  updateScoreTicker();
+  int levelNum = curLevel.num;
+  String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
+  textInit((int) (480 / toBeDisplayed.length()));
+  int above = (int) textAscent();
+  fill(color(0, 255, 0));
+  text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
+  createNext();
+  updateNext();
+  drawNext();
+}
+void progressionModeMain() throws Exception {
+  background(51);
+  curBlock.update();
+  drawBorder();
+  adjustLines();
+  updateGrid();
+  outlineDrop();
+  lvlUp();
+  drawGrid();
+  updateScoreTicker();
+  updateLevelTicker();
+  createNext();
+  updateNext();
+  drawNext();
+  if (frameCount % curLevel.lvlSpeed == 0) {
+    updateBlock();
+    curLevel.lvlSpeed = speed;
+  }
+}
+void progressionMouse() throws Exception {
   if (mouseX > 30 && mouseX < 90 && mouseY > 30 && mouseY < 90) {
     end();
     exit();
@@ -95,17 +140,27 @@ void mouseClicked() {
   }
   else {
     if (!paused) {
-      PVector leftDrop = curBlock.coordIncident();
-      curBlock.leftmostXGrid = (int) leftDrop.x;
-      curBlock.leftmostYGrid = (int) leftDrop.y;
-      curBlock.update();
-      updateGrid();
-      drawGrid();
-      coincidence();
+        PVector leftDrop = curBlock.coordIncident();
+        curBlock.leftmostXGrid = (int) leftDrop.x;
+        curBlock.leftmostYGrid = (int) leftDrop.y;
+        curBlock.update();
+        updateGrid();
+        drawGrid();
+        coincidence();  
     }
   }
 }
-void keyPressed() {
+void mouseClicked() {
+  if (gameMode.equals("Progression")) {
+    try {
+      progressionMouse();
+    }
+    catch (Exception e) {
+      gameOver();
+    }
+  }
+}
+void progressionKey() throws Exception {
   if (key == "A".charAt(0)) {
     curBlock.rotateB(1);
     curBlock.update();
@@ -136,10 +191,20 @@ void keyPressed() {
   else if (keyCode == UP) {
     curLevel.lvlSpeed = 5;
   }
-  curBlock.update();
-  updateGrid();
-  drawGrid();
-  coincidence();
+    curBlock.update();
+    updateGrid();
+    drawGrid();
+    coincidence();
+}
+void keyPressed() {
+  if (gameMode.equals("Progression")) {
+    try {
+      progressionKey();
+    }
+    catch (Exception e) {
+      gameOver();
+    }
+  }
 }
 
 
@@ -230,11 +295,11 @@ void updateGrid() {
   }
 }
 
-void updateBlock() {
+void updateBlock() throws Exception {
   drop();
 }
 
-void drop() {
+void drop() throws Exception {
   coincidence();
   curBlock.leftmostYGrid++;
   curBlock.update();
@@ -252,7 +317,7 @@ void regenBlock() {
   bottomYCor = 0;
 }
 
-void outlineDrop() {
+void outlineDrop() throws Exception {
   PVector leftmostOutline = curBlock.coordIncident();
   ArrayList<PVector> outlineCoords = curBlock.outlineCoordinates(leftmostOutline);
     for (PVector i : outlineCoords) {
@@ -273,7 +338,7 @@ boolean incident() {
   return false;
 }
 
-void coincidence() {
+void coincidence() throws Exception {
   int yLen = curBlock.curBlock.length;
   bottomYCor = curBlock.leftmostYGrid + yLen;
   PVector incidence = curBlock.coordIncident();
@@ -294,7 +359,7 @@ void coincidence() {
     }
   }
 
-void adjustLines() {
+void adjustLines() throws Exception {
   curBlock.update();
   updateGrid();
   drawGrid();
@@ -471,6 +536,10 @@ int expSpeed(int seed) {
 }
 int expScore(int seed) {
   return (int) (999999. / (1. + Math.exp(logisticConstant * (seed - 21))));
+}
+void gameOver() {
+  resetBoard();
+  gameMode = "Transitioning";
 }
 /**
 Game Procedure:

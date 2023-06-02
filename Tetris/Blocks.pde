@@ -206,7 +206,7 @@ class Blocks {
     color[] colors = {color(221, 10, 178), color(255, 200, 46), color(254, 251, 52), color(83, 218, 63), color(1, 237, 250), color(0, 119, 211), color(253, 63, 89)};
     return colors[block];
   }
-  PVector coordIncident() {
+  PVector coordIncident() throws Exception {
     update();
     ArrayList<PVector> incidentPoints = new ArrayList<PVector>();
     for (PVector i : coords) {
@@ -257,7 +257,7 @@ class Blocks {
     }
   }
   
-  boolean incidentOrNot(PVector leftmostOutline) {
+  boolean incidentOrNot(PVector leftmostOutline) throws Exception {
     // try {
     ArrayList<PVector> outlineCoords = outlineCoordinates(leftmostOutline);
     // System.out.println(outlineCoords);
