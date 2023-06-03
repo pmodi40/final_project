@@ -9,43 +9,62 @@ public Blocks curBlock;
 public Blocks[] nextBlocks = new Blocks[3];
 public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(175, 139, 125);
+public color from;
 public int speed = 100;
 public int bottomYCor;
 public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
 public int lastFrameCount;
 public int score;
-public int highScore;
+public int highScore = 0;
 public PFont fontToUse;
-public Level curLevel = new Level("Level 1", 1, 100, 4000);
+public Level curLevel = new Level("Level 1", 1, 100, 400);
 public boolean paused = false;
-public String gameMode = "Progression";
+public String gameMode = "Starting";
 public int levelChange = 0;
+public StartingScreen curScreen;
 private int lastI;
 private int lastG;
+public int circlesRemaining;
 // Constants
 public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
+public final color[] gradientStart = {color(52, 141, 224), color(230, 107, 46), color(38, 181, 88), color(168, 19, 116)};
 // Setup Method
 void setup() {
     size(540, 840);
     fontToUse = loadFont("PTMono-Bold-60.vlw");
-    gridCreation();
-    borderCreation();
-    drawGrid();
-    drawBorder();
-    for (int i = 0; i < 3; i++) {
-      Blocks newB = new Blocks();
-      newB.rotationState = 0;
-      nextBlocks[i] = newB;
-    }
-    regenBlock();
-    createNext();
-    updateNext();
-    drawNext();
+    startingSetup();
+    // progressionSetup();
+}
+void progressionSetup() {
+  gridCreation();
+  borderCreation();
+  drawGrid();
+  drawBorder();
+  for (int i = 0; i < 3; i++) {
+    Blocks newB = new Blocks();
+    newB.rotationState = 0;
+    nextBlocks[i] = newB;
+  }
+  regenBlock();
+  createNext();
+  updateNext();
+  drawNext();
+  score = 0;
+  curLevel = new Level("Level 1", 1, 100, 400);
+  linesToRemove = new ArrayList<Integer>();
+  lastI = 0;
+  lastG = 0;
+}
+void startingSetup() {
+  curScreen = new StartingScreen(0);
+  drawStartingScreen();
 }
 void draw() {
   if (gameMode.equals("Progression")) {
     if (levelChange == 2) {
       levelChangeEnd();
+      levelChange = 0;
+      resetBoard();
     }
     if (levelChange == 1) {
       levelChangeProcess();
@@ -63,33 +82,153 @@ void draw() {
     
   }
   else if (gameMode.equals("Starting")) {
-    
+    drawStartingScreen();
   }
   else if (gameMode.equals("Transitioning")) {
-    
+    if (lastI < 28) {
+      transitionOutGame();
+    }
+    else {
+      textFrame();
+    }
+  }
+  else if (gameMode.equals("TransitionTwo")) {
+    if (lastI < 28) {
+      transitionTwoOverall();
+    }
+    else {
+      progressionSetup();
+      gameMode = "Progression";
+    }
+  }
+}
+void textFrame() {
+  if (lastFrameCount == 0) lastFrameCount = frameCount;
+      if (Math.abs(lastFrameCount - frameCount) < 800) {
+        background(51);
+        drawFullBorder();
+        textSize(100);
+        textAlign(CENTER);
+        fill(color(255, 255, 255));
+        text("Game Over!", 0, 300, 540, 210);
+      }
+      else {
+        lastFrameCount = 0;
+        gameMode = "Starting";
+        curScreen = new StartingScreen(0);
+      }
+}
+void drawStartingScreen() {
+  drawExt();
+  for (Grid[] i : curScreen.overallCoordinates) {
+    for (Grid k : i) {
+      if (k.curColor != color(52, 141, 224)) {
+        if (k.border == color(19, 19, 19)) {
+          noStroke();
+        }
+        else {
+          stroke(k.border);
+        }
+        fill(k.curColor);
+        square(k.leftXCor, k.leftYCor, 30);
+      }
+    }
+  }
+  String playScreen = "Play!";
+  int size = textSizeGen(playScreen, 480);
+  textInit(size, color(255, 255, 255));
+  int above = (int) textAscent();
+  text(playScreen, 150, 570 + above - 15, 240, 180);
+  int numZero = 6 - len(highScore);
+  String highScoreScreen = repeat("0", numZero) + highScore;
+  size = textSizeGen(highScoreScreen, 240);
+  textInit(size, color(255, 255, 255));
+  text(highScoreScreen, 180, 360 + (int) textAscent() * 2, 180, 150);
+  PImage tetrisLogo = loadImage("tetris-logo.png");
+  tetrisLogo.resize(360, 240);
+  image(tetrisLogo, 90, 60);
+}
+void drawExt() {
+  if (lastFrameCount == 0) {
+    background(12);
+    fill(color(0, 0, 0));
+    circle(0, 0, 9000);
+    lastFrameCount = frameCount;
+    from = gradientStart[(int) (Math.random() * 4)];
+  }
+  else if (Math.abs(lastFrameCount - frameCount) % 1 == 0) {
+    color to = color(0, 0, 0);
+    int i = 84 - (frameCount - lastFrameCount) / 1;
+    if (i < 1) {
+      i = Math.abs(i);
+      fill(defaultColor);
+      int radius = 420 - (55 - i) * 5;
+      circle(270, 420, radius);
+      delay(1);
+      if (i == 84) {
+        lastFrameCount = 0;
+        lastI = 0;
+        lastG = 0;
+      }
+    }
+    else {
+      noStroke();
+      float progressFactor = (i * (1. / 84.));
+      int radius = 420 - (55 - i) * 5;
+      color inter = lerpColor(from, to, progressFactor);
+      fill(inter);
+      circle(270, 420, radius);
+    }
   }
 }
 void initBorder() {
   for (int i = 0; i < border.length; i++) {
     for (int j = 0; j < border[i].length; j++) {
-      border[i][j] = new Grid(j * 30, i * 30, color(0, 0, 0));
+      if (i > 3 && i < 24 && j > 3 && j < 14) {
+        if (!gameMode.equals("TransitionTwo")) {
+          border[i][j] = coordinates[i - 4][j - 4];
+        }
+        else {
+          border[i][j] = curScreen.overallCoordinates[i][j];
+        }
+      }
     }
+  }
+}
+void transitionTwoOverall() {
+  fill(color(255, 255, 255));
+  noStroke();
+  square(lastG * 30, lastI * 30, 30);
+  lastG++;
+  if (lastG >= 18) {
+    lastG = 0;
+    lastI++;
   }
 }
 void drawFullBorder() {
   for (Grid[] k : border) {
     for (Grid v : k) {
-      
+      if (v.border == color(17,29,37)) noStroke();
+      else stroke(v.border);
+      fill(v.curColor);
+      square(v.leftXCor, v.leftYCor, 30);
     }
   }
 }
 void transitionOutGame() {
-  border[lastI][lastG] = new Grid(lastG * 30, lastI * 30, color(255, 0, 0));
+  Grid toBeAdded = new Grid(lastG * 30, lastI * 30, color(255, 0, 0));
+  toBeAdded.border = color(17,29,37);
+  border[lastI][lastG] = toBeAdded;
+  lastG++;
+  if (lastG >= 18) {
+    lastG = 0;
+    lastI++;
+  }
+  drawFullBorder();
 }
 void levelChangeEnd() {
   delay(5000);
   updateLevel();
-  levelChange = 0;
 }
 void levelChangeProcess() {
   levelChange++;
@@ -101,9 +240,8 @@ void levelChangeProcess() {
   updateScoreTicker();
   int levelNum = curLevel.num;
   String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
-  textInit((int) (480 / toBeDisplayed.length()));
+  textInit((int) (480 / toBeDisplayed.length()), color(0, 255, 0));
   int above = (int) textAscent();
-  fill(color(0, 255, 0));
   text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
   createNext();
   updateNext();
@@ -153,11 +291,24 @@ void progressionMouse() throws Exception {
 void mouseClicked() {
   if (gameMode.equals("Progression")) {
     try {
+      System.out.println(levelChange);
       progressionMouse();
     }
     catch (Exception e) {
       gameOver();
     }
+  }
+  if (gameMode.equals("Starting")) {
+    startingMouse();
+  }
+}
+void startingMouse() {
+  int x = mouseX;
+  int y = mouseY;
+  if (x > 120 && x < 390 && y > 540 && y < 750) {
+    gameMode = "TransitionTwo";
+    lastI = 0;
+    lastG = 0;
   }
 }
 void progressionKey() throws Exception {
@@ -430,7 +581,7 @@ String repeat(String unit, int num) {
   return accum;
 }
 void updateScoreTicker() {
-  textInit(60);
+  textInit(60, color(255, 255, 255));
   int numZero = 6 - len(score);
   String displayMark = repeat("0", numZero) + score;
   text(displayMark, border[25][4].leftXCor, border[25][4].leftYCor + 7, 300, 60); 
@@ -493,15 +644,18 @@ void end() {
 void updateLevelTicker() {
   int levelNum = curLevel.num;
   String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
-  textInit((int) (480 / toBeDisplayed.length()));
+  textInit((int) (480 / toBeDisplayed.length()), color(255, 255, 255));
   int above = (int) textAscent();
   text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
 }
-void textInit(int size) {
+void textInit(int size, color set) {
   textAlign(CENTER);
   textFont(fontToUse);
-  fill(color(255, 255, 255));
+  fill(set);
   textSize(size);
+}
+int textSizeGen(String text, int widthText) {
+  return (int) (widthText / text.length());
 }
 void updateLevel() {
   resetBoard();
@@ -538,13 +692,7 @@ int expScore(int seed) {
   return (int) (999999. / (1. + Math.exp(logisticConstant * (seed - 21))));
 }
 void gameOver() {
-  resetBoard();
+  if (score > highScore) highScore = score;
   gameMode = "Transitioning";
+  initBorder();
 }
-/**
-Game Procedure:
-1. Board Drawn
-2. Falling Procedure/Coordinate Support for blocks
-3. Tracking full grid squares (use leftmost and furthest down part)
-4. Random choosing
-*/
