@@ -27,13 +27,12 @@ private int lastG;
 public int circlesRemaining;
 // Constants
 public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
-public final color[] gradientStart = {color(52, 141, 224), color(230, 107, 46), color(38, 181, 88), color(168, 19, 116)};
+public final color[] gradientStart = {color(52, 141, 224), color(230, 107, 46), color(38, 181, 88), color(168, 19, 116), color(135, 41, 194), color(179, 27, 27), color(152, 209, 19), color(9, 233, 237)};
 // Setup Method
 void setup() {
     size(540, 840);
     fontToUse = loadFont("PTMono-Bold-60.vlw");
     startingSetup();
-    // progressionSetup();
 }
 void progressionSetup() {
   gridCreation();
@@ -59,6 +58,26 @@ void startingSetup() {
   curScreen = new StartingScreen(0);
   drawStartingScreen();
 }
+void arcadeSetup() {
+  gridCreation();
+  borderCreation();
+  drawGrid();
+  drawBorder();
+  for (int i = 0; i < 3; i++) {
+    Blocks newB = new Blocks();
+    newB.rotationState = 0;
+    nextBlocks[i] = newB;
+  }
+  regenBlock();
+  createNext();
+  updateNext();
+  drawNext();
+  score = 0;
+  curLevel = null;
+  linesToRemove = new ArrayList<Integer>();
+  lastI = 0;
+  lastG = 0;
+}
 void draw() {
   if (gameMode.equals("Progression")) {
     if (levelChange == 2) {
@@ -79,7 +98,12 @@ void draw() {
     }
   }
   else if (gameMode.equals("Arcade")) {
-    
+    try {
+      
+    }
+    catch (Exception e) {
+      gameOver();
+    }
   }
   else if (gameMode.equals("Starting")) {
     drawStartingScreen();
@@ -89,6 +113,7 @@ void draw() {
       transitionOutGame();
     }
     else {
+      frameRate(60);
       textFrame();
     }
   }
@@ -97,6 +122,7 @@ void draw() {
       transitionTwoOverall();
     }
     else {
+      frameRate(60);
       progressionSetup();
       gameMode = "Progression";
     }
@@ -154,18 +180,20 @@ void drawExt() {
     fill(color(0, 0, 0));
     circle(0, 0, 9000);
     lastFrameCount = frameCount;
-    from = gradientStart[(int) (Math.random() * 4)];
+    from = gradientStart[(int) (Math.random() * 8)];
   }
   else if (Math.abs(lastFrameCount - frameCount) % 1 == 0) {
     color to = color(0, 0, 0);
     int i = 84 - (frameCount - lastFrameCount) / 1;
     if (i < 1) {
+      frameRate(120);
       i = Math.abs(i);
       fill(defaultColor);
       int radius = 420 - (55 - i) * 5;
       circle(270, 420, radius);
-      delay(1);
+      // delay(1);
       if (i == 84) {
+        frameRate(60);
         lastFrameCount = 0;
         lastI = 0;
         lastG = 0;
@@ -196,6 +224,7 @@ void initBorder() {
   }
 }
 void transitionTwoOverall() {
+  frameRate(100);
   fill(color(255, 255, 255));
   noStroke();
   square(lastG * 30, lastI * 30, 30);
@@ -216,6 +245,7 @@ void drawFullBorder() {
   }
 }
 void transitionOutGame() {
+  frameRate(100);
   Grid toBeAdded = new Grid(lastG * 30, lastI * 30, color(255, 0, 0));
   toBeAdded.border = color(17,29,37);
   border[lastI][lastG] = toBeAdded;
@@ -268,8 +298,7 @@ void progressionModeMain() throws Exception {
 }
 void progressionMouse() throws Exception {
   if (mouseX > 30 && mouseX < 90 && mouseY > 30 && mouseY < 90) {
-    end();
-    exit();
+    gameOver();
   }
   else if (mouseX > 420 && mouseX < 480 && mouseY > 30 && mouseY < 90) {
     paused = !paused;
@@ -291,16 +320,62 @@ void progressionMouse() throws Exception {
 void mouseClicked() {
   if (gameMode.equals("Progression")) {
     try {
-      System.out.println(levelChange);
       progressionMouse();
     }
     catch (Exception e) {
       gameOver();
     }
   }
-  if (gameMode.equals("Starting")) {
+  else if (gameMode.equals("Starting")) {
     startingMouse();
   }
+  else if (gameMode.equals("Arcade")) {
+    try {
+      
+    }
+    catch (Exception e) {
+      gameOver();
+    }
+  }
+}
+void arcadeMouse() {
+  
+}
+void arcadeMain() throws Exception {
+  background(51);
+  curBlock.update();
+  drawBorder();
+  adjustLines();
+  updateGrid();
+  outlineDrop();
+  drawGrid();
+  updateScoreTicker();
+  String toBeDisplayed = "Arcade!";
+  textInit((int) (480 / toBeDisplayed.length()), color(255, 255, 255));
+  int above = (int) textAscent();
+  text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
+  createNext();
+  updateNext();
+  drawNext();
+  /* Adaptive speed based on time!
+  if (frameCount % speed == 0) {
+    updateBlock();
+    curLevel.lvlSpeed = speed;
+  }
+  */
+}
+void arcadeKey() throws Exception {
+  basicKey();
+  if (keyCode == DOWN) {
+    curLevel.lvlSpeed = 5; // HANDLE SPEED!
+  }
+  else if (keyCode == UP) {
+    curLevel.lvlSpeed = 5; // HANDLE SPEED!
+  }
+    curBlock.update();
+    updateGrid();
+    drawGrid();
+    coincidence();
 }
 void startingMouse() {
   int x = mouseX;
@@ -311,7 +386,7 @@ void startingMouse() {
     lastG = 0;
   }
 }
-void progressionKey() throws Exception {
+void basicKey() {
   if (key == "A".charAt(0)) {
     curBlock.rotateB(1);
     curBlock.update();
@@ -336,7 +411,10 @@ void progressionKey() throws Exception {
       if (incident()) curBlock.leftmostXGrid--;
     }
   }
-  else if (keyCode == DOWN) {
+}
+void progressionKey() throws Exception {
+  basicKey();
+  if (keyCode == DOWN) {
     curLevel.lvlSpeed = 5;
   }
   else if (keyCode == UP) {
