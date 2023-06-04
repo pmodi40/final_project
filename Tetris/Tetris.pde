@@ -189,7 +189,7 @@ void drawExt() {
       frameRate(120);
       i = Math.abs(i);
       fill(defaultColor);
-      int radius = 420 - (55 - i) * 5;
+      int radius = 840 - (70 - i) * 10;
       circle(270, 420, radius);
       // delay(1);
       if (i == 84) {
@@ -202,7 +202,7 @@ void drawExt() {
     else {
       noStroke();
       float progressFactor = (i * (1. / 84.));
-      int radius = 420 - (55 - i) * 5;
+      int radius = 840 - (70 - i) * 10;
       color inter = lerpColor(from, to, progressFactor);
       fill(inter);
       circle(270, 420, radius);
@@ -215,6 +215,7 @@ void initBorder() {
       if (i > 3 && i < 24 && j > 3 && j < 14) {
         if (!gameMode.equals("TransitionTwo")) {
           border[i][j] = coordinates[i - 4][j - 4];
+          border[i][j].border = color(2, 2, 2);
         }
         else {
           border[i][j] = curScreen.overallCoordinates[i][j];
@@ -224,7 +225,7 @@ void initBorder() {
   }
 }
 void transitionTwoOverall() {
-  frameRate(100);
+  frameRate(250);
   fill(color(255, 255, 255));
   noStroke();
   square(lastG * 30, lastI * 30, 30);
@@ -238,14 +239,15 @@ void drawFullBorder() {
   for (Grid[] k : border) {
     for (Grid v : k) {
       if (v.border == color(17,29,37)) noStroke();
-      else stroke(v.border);
+      else if (v.border == color(2, 2, 2)) stroke(v.border);
+      else noStroke();
       fill(v.curColor);
       square(v.leftXCor, v.leftYCor, 30);
     }
   }
 }
 void transitionOutGame() {
-  frameRate(100);
+  frameRate(250);
   Grid toBeAdded = new Grid(lastG * 30, lastI * 30, color(255, 0, 0));
   toBeAdded.border = color(17,29,37);
   border[lastI][lastG] = toBeAdded;
@@ -612,7 +614,7 @@ void adjustLines() throws Exception {
   }
   lastFrameCount = frameCount;
   }
-  if (Math.abs(lastFrameCount - frameCount) > 49) { // Adapt to middle clears!
+  if (Math.abs(lastFrameCount - frameCount) > 49) {
   score += Math.pow(50, linesToRemove.size());
     for (Integer i : linesToRemove) {
       for (Grid k : coordinates[i]) {
