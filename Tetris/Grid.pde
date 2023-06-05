@@ -12,6 +12,7 @@ class Grid {
     public boolean nextZone = false;
     public boolean endZone = false;
     public boolean pauseZone = false;
+    public boolean borderZone = false;
     // Constructor(s)
     public Grid(int leftXCor, int leftYCor, color curColor) {
         this.leftXCor = leftXCor;

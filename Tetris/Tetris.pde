@@ -59,6 +59,7 @@ void startingSetup() {
   drawStartingScreen();
 }
 void arcadeSetup() {
+  speed = 100;
   gridCreation();
   borderCreation();
   drawGrid();
@@ -77,6 +78,10 @@ void arcadeSetup() {
   linesToRemove = new ArrayList<Integer>();
   lastI = 0;
   lastG = 0;
+  String toBeDisplayed = "Arcade!";
+  textInit((int) (480 / toBeDisplayed.length()), color(255, 255, 255));
+  int above = (int) textAscent();
+  text(toBeDisplayed, 120, 30 + above, 300, 60);
 }
 void draw() {
   if (gameMode.equals("Progression")) {
@@ -99,7 +104,7 @@ void draw() {
   }
   else if (gameMode.equals("Arcade")) {
     try {
-      
+      arcadeMain();
     }
     catch (Exception e) {
       gameOver();
@@ -123,8 +128,8 @@ void draw() {
     }
     else {
       frameRate(60);
-      progressionSetup();
-      gameMode = "Progression";
+      arcadeSetup();
+      gameMode = "Arcade";
     }
   }
 }
@@ -145,34 +150,53 @@ void textFrame() {
       }
 }
 void drawStartingScreen() {
-  drawExt();
-  for (Grid[] i : curScreen.overallCoordinates) {
-    for (Grid k : i) {
-      if (k.curColor != color(52, 141, 224)) {
-        if (k.border == color(19, 19, 19)) {
-          noStroke();
+  if (curScreen.type == 0) {
+    drawExt();
+    for (Grid[] i : curScreen.overallCoordinates) {
+      for (Grid k : i) {
+        if (k.curColor != color(52, 141, 224)) {
+          if (k.border == color(19, 19, 19)) {
+            noStroke();
+          }
+          else {
+            stroke(k.border);
+          }
+          fill(k.curColor);
+          square(k.leftXCor, k.leftYCor, 30);
         }
-        else {
-          stroke(k.border);
+      }
+    }
+    String playScreen = "Play!";
+    int size = textSizeGen(playScreen, 480);
+    textInit(size, color(255, 255, 255));
+    int above = (int) textAscent();
+    text(playScreen, 150, 570 + above - 15, 240, 180);
+    int numZero = 6 - len(highScore);
+    String highScoreScreen = repeat("0", numZero) + highScore;
+    size = textSizeGen(highScoreScreen, 240);
+    textInit(size, color(255, 255, 255));
+    text(highScoreScreen, 180, 360 + (int) textAscent() * 2, 180, 150);
+    PImage tetrisLogo = loadImage("tetris-logo.png");
+    tetrisLogo.resize(360, 240);
+    image(tetrisLogo, 90, 60);
+  }
+  else if (curScreen.type == 1) {
+    gradientHalves();
+    for (Grid[] i : curScreen.overallCoordinates) {
+      for (Grid k : i) {
+        if (k.curColor != color(52, 141, 224)) {
+          if (k.border == color(19, 19, 19)) {
+            noStroke();
+          }
+          else {
+            stroke(k.border);
+          }
+          fill(k.curColor);
+          square(k.leftXCor, k.leftYCor, 30);
         }
-        fill(k.curColor);
-        square(k.leftXCor, k.leftYCor, 30);
       }
     }
   }
-  String playScreen = "Play!";
-  int size = textSizeGen(playScreen, 480);
-  textInit(size, color(255, 255, 255));
-  int above = (int) textAscent();
-  text(playScreen, 150, 570 + above - 15, 240, 180);
-  int numZero = 6 - len(highScore);
-  String highScoreScreen = repeat("0", numZero) + highScore;
-  size = textSizeGen(highScoreScreen, 240);
-  textInit(size, color(255, 255, 255));
-  text(highScoreScreen, 180, 360 + (int) textAscent() * 2, 180, 150);
-  PImage tetrisLogo = loadImage("tetris-logo.png");
-  tetrisLogo.resize(360, 240);
-  image(tetrisLogo, 90, 60);
 }
 void drawExt() {
   if (lastFrameCount == 0) {
@@ -334,15 +358,15 @@ void mouseClicked() {
   }
   else if (gameMode.equals("Arcade")) {
     try {
-      
+      arcadeMouse();
     }
     catch (Exception e) {
       gameOver();
     }
   }
 }
-void arcadeMouse() {
-  
+void arcadeMouse() throws Exception {
+  progressionMouse();
 }
 void arcadeMain() throws Exception {
   background(51);
@@ -354,26 +378,23 @@ void arcadeMain() throws Exception {
   drawGrid();
   updateScoreTicker();
   String toBeDisplayed = "Arcade!";
-  textInit((int) (480 / toBeDisplayed.length()), color(255, 255, 255));
-  int above = (int) textAscent();
-  text(toBeDisplayed, border[1][4].leftXCor, border[1][4].leftYCor + above, 300, 60);
+  textInit(45, color(255, 255, 255));
+  text(toBeDisplayed, 120, 30 + 15, 300, 60);
   createNext();
   updateNext();
   drawNext();
-  /* Adaptive speed based on time!
   if (frameCount % speed == 0) {
     updateBlock();
-    curLevel.lvlSpeed = speed;
+    speed = 100;
   }
-  */
 }
 void arcadeKey() throws Exception {
   basicKey();
   if (keyCode == DOWN) {
-    curLevel.lvlSpeed = 5; // HANDLE SPEED!
+    speed = 5;
   }
   else if (keyCode == UP) {
-    curLevel.lvlSpeed = 5; // HANDLE SPEED!
+    speed = 5;
   }
     curBlock.update();
     updateGrid();
@@ -384,6 +405,7 @@ void startingMouse() {
   int x = mouseX;
   int y = mouseY;
   if (x > 120 && x < 390 && y > 540 && y < 750) {
+    // curScreen = new StartingScreen(1);
     gameMode = "TransitionTwo";
     lastI = 0;
     lastG = 0;
@@ -432,6 +454,14 @@ void keyPressed() {
   if (gameMode.equals("Progression")) {
     try {
       progressionKey();
+    }
+    catch (Exception e) {
+      gameOver();
+    }
+  }
+  else if (gameMode.equals("Arcade")) {
+    try {
+      arcadeKey();
     }
     catch (Exception e) {
       gameOver();
@@ -766,14 +796,17 @@ void resetBoard() {
   regenBlock();
   linesToRemove = new ArrayList<Integer>();
 }
-int expSpeed(int seed) {
+int expSpeed(int seed) { // Exponential
   return (int) (96 * Math.pow(1.25, -1. * (seed - 1)) + 4);
 }
-int expScore(int seed) {
+int expScore(int seed) { // Logistic
   return (int) (999999. / (1. + Math.exp(logisticConstant * (seed - 21))));
 }
 void gameOver() {
   if (score > highScore) highScore = score;
   gameMode = "Transitioning";
   initBorder();
+}
+void gradientHalves() {
+  // Bounds: i = 2 -> 12; i = 15 -> 25; j = 2 -> 15
 }
