@@ -268,6 +268,7 @@ void levelChangeProcess() {
   drawBorder();
   curBlock = null;
   drawGrid();
+  if (score > highScore) highScore = score;
   System.out.println(score);
   updateScoreTicker();
   int levelNum = curLevel.num;
