@@ -583,7 +583,7 @@ void coincidence() throws Exception {
       // System.out.println("" + corX + "    " + corY);
       if (curBlock.curBlock[corY][corX] == 1) {
         coordinates[(int) i.y][(int) i.x].filled = true;
-        score += 10; 
+        score += 1; 
       }
     }
     regenBlock();
@@ -616,7 +616,7 @@ void adjustLines() throws Exception {
   lastFrameCount = frameCount;
   }
   if (Math.abs(lastFrameCount - frameCount) > 49) {
-  score += Math.pow(50, linesToRemove.size());
+  score += Math.pow(5, linesToRemove.size());
     for (Integer i : linesToRemove) {
       for (Grid k : coordinates[i]) {
         k.filled = false;
