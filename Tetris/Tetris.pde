@@ -55,7 +55,7 @@ void progressionSetup() {
   lastG = 0;
 }
 void startingSetup() {
-  curScreen = new StartingScreen(0);
+  curScreen = new StartingScreen(1);
   drawStartingScreen();
 }
 void arcadeSetup() {
@@ -181,7 +181,7 @@ void drawStartingScreen() {
     image(tetrisLogo, 90, 60);
   }
   else if (curScreen.type == 1) {
-    gradientHalves();
+    /*
     for (Grid[] i : curScreen.overallCoordinates) {
       for (Grid k : i) {
         if (k.curColor != color(52, 141, 224)) {
@@ -196,6 +196,8 @@ void drawStartingScreen() {
         }
       }
     }
+    */
+    gradientHalves();
   }
 }
 void drawExt() {
@@ -809,4 +811,36 @@ void gameOver() {
 }
 void gradientHalves() {
   // Bounds: i = 2 -> 12; i = 15 -> 25; j = 2 -> 15
+  if (lastFrameCount == 0) {
+    background(color(0, 0, 0));
+    lastFrameCount = frameCount;
+    from = gradientStart[(int) (Math.random() * 8)];
+  }
+  else if (Math.abs(lastFrameCount - frameCount) % 1 == 0) {
+    int i = (frameCount - lastFrameCount) / 1;
+    int xPos1 = 480 - 5 * (i);
+    int xPos2 = 5 * (i - 1) + 60;
+    if (i > 84) {
+      i = i - 84;
+      xPos1 = 480 - 5 * (i);
+      xPos2 = 5 * (i - 1) + 60;
+      fill(defaultColor);
+      rect(xPos1, 60, 5, 330);
+      rect(xPos2, 450, 5, 330);
+      if (i + 84 > 167 ) {
+      lastFrameCount = 0;
+      lastI = 0;
+      lastG = 0;
+    }
+    }
+    else {
+      noStroke();
+      color to = color(0, 0, 0);
+      float progressFactor = (float) (i * (1. / 84.));
+      color inter = lerpColor(from, to, progressFactor);
+      fill(inter);
+      rect(xPos1, 60, 5, 330);
+      rect(xPos2, 450, 5, 330);
+  }
+}
 }
