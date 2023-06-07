@@ -10,6 +10,8 @@ public Blocks[] nextBlocks = new Blocks[3];
 public color defaultColor = color(0, 0, 0);
 public color defaultBorderColor = color(175, 139, 125);
 public color from;
+public color from2;
+public color to;
 public int speed = 100;
 public int bottomYCor;
 public ArrayList<Integer> linesToRemove = new ArrayList<Integer>();
@@ -20,6 +22,7 @@ public PFont fontToUse;
 public Level curLevel = new Level("Level 1", 1, 100, 400);
 public boolean paused = false;
 public String gameMode = "Starting";
+public String gameModeNew;
 public int levelChange = 0;
 public StartingScreen curScreen;
 private int lastI;
@@ -32,7 +35,7 @@ public final color[] gradientStart = {color(52, 141, 224), color(230, 107, 46), 
 void setup() {
     size(540, 840);
     fontToUse = loadFont("PTMono-Bold-60.vlw");
-    startingSetup();
+    startingSetup(0);
 }
 void progressionSetup() {
   gridCreation();
@@ -54,9 +57,9 @@ void progressionSetup() {
   lastI = 0;
   lastG = 0;
 }
-void startingSetup() {
-  curScreen = new StartingScreen(1);
-  drawStartingScreen();
+void startingSetup(int type) {
+  curScreen = new StartingScreen(type);
+  background(0);
 }
 void arcadeSetup() {
   speed = 100;
@@ -128,8 +131,13 @@ void draw() {
     }
     else {
       frameRate(60);
-      arcadeSetup();
-      gameMode = "Arcade";
+      gameMode = gameModeNew;
+      if (gameModeNew.equals("Arcade")) {
+        arcadeSetup();
+      }
+      else {
+        progressionSetup();
+      }
     }
   }
 }
@@ -198,6 +206,10 @@ void drawStartingScreen() {
     }
     */
     gradientHalves();
+    textInit(60, color(255, 255, 255));
+    text("Arcade Mode", 60, 60 + textAscent() + 80, 420, 330);
+    textInit(45, color(255, 255, 255));
+    text("Progression Mode", 60, 450 + textAscent() + 80, 420, 330);
   }
 }
 void drawExt() {
@@ -406,11 +418,28 @@ void arcadeKey() throws Exception {
 void startingMouse() {
   int x = mouseX;
   int y = mouseY;
-  if (x > 120 && x < 390 && y > 540 && y < 750) {
-    // curScreen = new StartingScreen(1);
-    gameMode = "TransitionTwo";
-    lastI = 0;
-    lastG = 0;
+  if (curScreen.type == 0) {
+    if (x > 120 && x < 390 && y > 540 && y < 750) {
+      curScreen = new StartingScreen(1);
+      startingSetup(1);
+      lastI = 0;
+      lastG = 0;
+      lastFrameCount = 0;
+    }
+  }
+  else {
+    // Bounds: i = 2 -> 12; i = 15 -> 25; j = 2 -> 15
+    if (x > 60 && x < 480 && ((y > 60 && y < 390) || (y > 450 && y < 780))) {
+      if (y < 390) {
+        gameModeNew = "Arcade";
+      }
+      else {
+        gameModeNew = "Progression";
+      }
+      gameMode = "TransitionTwo";
+      lastI = 0;
+      lastG = 0;
+    }
   }
 }
 void basicKey() {
@@ -615,7 +644,7 @@ void coincidence() throws Exception {
       // System.out.println("" + corX + "    " + corY);
       if (curBlock.curBlock[corY][corX] == 1) {
         coordinates[(int) i.y][(int) i.x].filled = true;
-        score += 1; 
+        score += 10; 
       }
     }
     regenBlock();
@@ -648,7 +677,7 @@ void adjustLines() throws Exception {
   lastFrameCount = frameCount;
   }
   if (Math.abs(lastFrameCount - frameCount) > 49) {
-  score += Math.pow(5, linesToRemove.size());
+  score += Math.pow(50, linesToRemove.size());
     for (Integer i : linesToRemove) {
       for (Grid k : coordinates[i]) {
         k.filled = false;
@@ -812,34 +841,41 @@ void gameOver() {
 void gradientHalves() {
   // Bounds: i = 2 -> 12; i = 15 -> 25; j = 2 -> 15
   if (lastFrameCount == 0) {
-    background(color(0, 0, 0));
+    // background(color(0, 0, 0));
     lastFrameCount = frameCount;
     from = gradientStart[(int) (Math.random() * 8)];
+    from2 = gradientStart[(int) (Math.random() * 8)];
+    to = gradientStart[(int) (Math.random() * 8)];
+    while (to == from || to == from2 || to == 0)
+    to = gradientStart[(int) (Math.random() * 8)];
   }
   else if (Math.abs(lastFrameCount - frameCount) % 1 == 0) {
-    int i = (frameCount - lastFrameCount) / 1;
+    int i = Math.abs(frameCount - lastFrameCount) / 1;
     int xPos1 = 480 - 5 * (i);
     int xPos2 = 5 * (i - 1) + 60;
     if (i > 84) {
+      /*
       i = i - 84;
       xPos1 = 480 - 5 * (i);
       xPos2 = 5 * (i - 1) + 60;
       fill(defaultColor);
       rect(xPos1, 60, 5, 330);
       rect(xPos2, 450, 5, 330);
-      if (i + 84 > 167 ) {
+      */
+      //if (i + 84 > 167 ) {
       lastFrameCount = 0;
       lastI = 0;
       lastG = 0;
-    }
+    //}
     }
     else {
       noStroke();
-      color to = color(0, 0, 0);
       float progressFactor = (float) (i * (1. / 84.));
       color inter = lerpColor(from, to, progressFactor);
+      color inter2 = lerpColor(from2, to, progressFactor);
       fill(inter);
       rect(xPos1, 60, 5, 330);
+      fill(inter2);
       rect(xPos2, 450, 5, 330);
   }
 }
