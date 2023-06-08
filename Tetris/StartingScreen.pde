@@ -24,12 +24,6 @@ class StartingScreen {
             toBeAdded.border = color(19, 19, 19);
             overallCoordinates[i][j] = toBeAdded;
           }
-          /*
-          Starting Screen Specs:
-          Tetris Logo in the top-middle
-          Highscore Display for EACH GAMEMODE
-          Play Button -> Leads to screens with two diff animations for two diff modes
-          */
         }
       }
     }
@@ -41,7 +35,6 @@ class StartingScreen {
           if (i < 2 || i > 25 || j < 2 || j > 15 || (i > 12 && i < 15)) {
             Grid toBeAdded = new Grid(xPos, yPos, color(0, 0, 0));
             toBeAdded.border = color(19, 19, 19);
-            toBeAdded.borderZone = true;
             overallCoordinates[i][j] = toBeAdded;
           }
           else {

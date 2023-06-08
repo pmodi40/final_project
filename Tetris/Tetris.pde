@@ -28,6 +28,7 @@ public StartingScreen curScreen;
 private int lastI;
 private int lastG;
 public int circlesRemaining;
+public boolean changing = false;
 // Constants
 public final double logisticConstant = -1. * (Math.log(999599.0 / 400.0) / 20.0);
 public final color[] gradientStart = {color(52, 141, 224), color(230, 107, 46), color(38, 181, 88), color(168, 19, 116), color(135, 41, 194), color(179, 27, 27), color(152, 209, 19), color(9, 233, 237)};
@@ -153,6 +154,8 @@ void textFrame() {
       }
       else {
         lastFrameCount = 0;
+        changing = false;
+        paused = false;
         gameMode = "Starting";
         curScreen = new StartingScreen(0);
       }
@@ -189,22 +192,6 @@ void drawStartingScreen() {
     image(tetrisLogo, 90, 60);
   }
   else if (curScreen.type == 1) {
-    /*
-    for (Grid[] i : curScreen.overallCoordinates) {
-      for (Grid k : i) {
-        if (k.curColor != color(52, 141, 224)) {
-          if (k.border == color(19, 19, 19)) {
-            noStroke();
-          }
-          else {
-            stroke(k.border);
-          }
-          fill(k.curColor);
-          square(k.leftXCor, k.leftYCor, 30);
-        }
-      }
-    }
-    */
     gradientHalves();
     textInit(60, color(255, 255, 255));
     text("Arcade Mode", 60, 60 + textAscent() + 80, 420, 330);
@@ -229,7 +216,6 @@ void drawExt() {
       fill(defaultColor);
       int radius = 840 - (70 - i) * 10;
       circle(270, 420, radius);
-      // delay(1);
       if (i == 84) {
         frameRate(60);
         lastFrameCount = 0;
@@ -297,7 +283,11 @@ void transitionOutGame() {
   drawFullBorder();
 }
 void levelChangeEnd() {
-  delay(5000);
+  long curTime = year() * 31536000 + month() * 2628000 + day() * 86400 + hour() * 3600 + minute() * 60 + second();
+  while ((year() * 31536000 + month() * 2628000 + day() * 86400 + hour() * 3600 + minute() * 60 + second()) < (curTime + 4)) {noLoop();
+  changing = true;}
+  changing = false;
+  loop();
   updateLevel();
 }
 void levelChangeProcess() {
@@ -307,7 +297,6 @@ void levelChangeProcess() {
   curBlock = null;
   drawGrid();
   if (score > highScore) highScore = score;
-  System.out.println(score);
   updateScoreTicker();
   int levelNum = curLevel.num;
   String toBeDisplayed = "Level " + levelNum + ": " + curLevel.lvlScore;
@@ -338,28 +327,30 @@ void progressionModeMain() throws Exception {
   }
 }
 void progressionMouse() throws Exception {
-  if (mouseX > 30 && mouseX < 90 && mouseY > 30 && mouseY < 90) {
-    gameOver();
-  }
-  else if (mouseX > 420 && mouseX < 480 && mouseY > 30 && mouseY < 90) {
-    paused = !paused;
-    if (paused) noLoop();
-    else loop();
-  }
-  else {
-    if (!paused) {
-        PVector leftDrop = curBlock.coordIncident();
-        curBlock.leftmostXGrid = (int) leftDrop.x;
-        curBlock.leftmostYGrid = (int) leftDrop.y;
-        curBlock.update();
-        updateGrid();
-        drawGrid();
-        coincidence();  
+  if (!changing) {
+    if (mouseX > 30 && mouseX < 90 && mouseY > 30 && mouseY < 90) {
+      gameOver();
+    }
+    else if (mouseX > 420 && mouseX < 480 && mouseY > 30 && mouseY < 90) {
+      paused = !paused;
+      if (paused) noLoop();
+      else loop();
+    }
+    else if (!changing) {
+      if (!paused && !changing) {
+          PVector leftDrop = curBlock.coordIncident();
+          curBlock.leftmostXGrid = (int) leftDrop.x;
+          curBlock.leftmostYGrid = (int) leftDrop.y;
+          curBlock.update();
+          updateGrid();
+          drawGrid();
+          coincidence();  
+      }
     }
   }
 }
 void mouseClicked() {
-  if (gameMode.equals("Progression")) {
+  if (gameMode.equals("Progression") && !changing) {
     try {
       progressionMouse();
     }
@@ -517,27 +508,22 @@ void borderCreation() {
             if (i < 4 || i > 23 || j < 4 || j > 13) {
               if (i > 0 && i < 3 && j > 3 && j < 14) {
                 Grid toBeAdded = new Grid(30 * j, 30 * i, color(112, 185, 247));
-                toBeAdded.nameZone = true;
                 border[i][j] = toBeAdded;
               }
               else if (i > 24 && i < 27 && j > 3 && j < 14) {
                 Grid toBeAdded = new Grid(30 * j, 30 * i, color(112, 185, 247));
-                toBeAdded.scoreZone = true;
                 border[i][j] = toBeAdded;
               }
               else if (i > 0 && i < 3 && j > 0 && j < 3) {
                 Grid toBeAdded = new Grid(30 * j, 30 * i, color(227, 36, 18));
-                toBeAdded.endZone = true;
                 border[i][j] = toBeAdded;
               }
               else if (i > 0 && i < 3 && j > 14 && j < 17) {
                 Grid toBeAdded = new Grid(30 * j, 30 * i, color(85, 80, 80));
-                toBeAdded.pauseZone = true;
                 border[i][j] = toBeAdded;
               }
               else if (i > 10 && i < 17 && j > 14 && j < 17) {
                 Grid toBeAdded = new Grid(30 * j, 30 * i, defaultBorderColor);
-                toBeAdded.nextZone = true;
                 border[i][j] = toBeAdded;
               }
               else {
@@ -638,10 +624,8 @@ void coincidence() throws Exception {
   int bottomYIncidence = (int) incidence.y + yLen;
   if (bottomYCor > 19 || bottomYCor == bottomYIncidence) {
     for (PVector i : curBlock.coords) {
-      // System.out.println(i.y);
       int corX = (int) i.x - curBlock.leftmostXGrid;
       int corY = (int) i.y - curBlock.leftmostYGrid;
-      // System.out.println("" + corX + "    " + corY);
       if (curBlock.curBlock[corY][corX] == 1) {
         coordinates[(int) i.y][(int) i.x].filled = true;
         score += 10; 
@@ -841,7 +825,6 @@ void gameOver() {
 void gradientHalves() {
   // Bounds: i = 2 -> 12; i = 15 -> 25; j = 2 -> 15
   if (lastFrameCount == 0) {
-    // background(color(0, 0, 0));
     lastFrameCount = frameCount;
     from = gradientStart[(int) (Math.random() * 8)];
     from2 = gradientStart[(int) (Math.random() * 8)];
@@ -854,19 +837,9 @@ void gradientHalves() {
     int xPos1 = 480 - 5 * (i);
     int xPos2 = 5 * (i - 1) + 60;
     if (i > 84) {
-      /*
-      i = i - 84;
-      xPos1 = 480 - 5 * (i);
-      xPos2 = 5 * (i - 1) + 60;
-      fill(defaultColor);
-      rect(xPos1, 60, 5, 330);
-      rect(xPos2, 450, 5, 330);
-      */
-      //if (i + 84 > 167 ) {
       lastFrameCount = 0;
       lastI = 0;
       lastG = 0;
-    //}
     }
     else {
       noStroke();
