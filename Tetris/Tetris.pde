@@ -661,7 +661,7 @@ void adjustLines() throws Exception {
   lastFrameCount = frameCount;
   }
   if (Math.abs(lastFrameCount - frameCount) > 49) {
-  score += Math.pow(50, linesToRemove.size());
+  score += Math.pow(20, linesToRemove.size());
     for (Integer i : linesToRemove) {
       for (Grid k : coordinates[i]) {
         k.filled = false;
